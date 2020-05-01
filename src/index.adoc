@@ -1,18 +1,98 @@
 = 엔티티 클래스의 설계와 퍼시스턴스 프레임워크의 활용
 :toc:
+:doctype: book
 :deckjs_theme: swiss
 
-== Slide 0
+== 발표자 소개
+* (2004~2008) 삼성 SDS : 공공기관 프로젝트 참여
+* (2008~2020) 네이버 : 다양한 조직의 코드를 구경할 기회가 많았음
+* 대부분 DB와 붙여서 개발하는 프로젝트를 수행
+** 매번 반복되는 고민들이 있었다.
 
-[source,java]
------
-public class My {
+== 화두
+* DB와 연관된 클래스를 만들어야할까?
+** 결국 DB로 들어갈 값을 실어나르는 클래스 또는 DB에 persistent하게 저장될 클래스?
+* 프레임워크는 어떤 것을 써야 할까?
 
-}
------
+== 최고속(?) 웹개발 스타일
+Spring Boot를 이용한 예제
 
-== Slide 1
-[%step]
-* Foo
-* Bar
-* World
+=== 어떤 분들에게는 감동의 지점
+* 파일 하나만 보면 됨
+* 고치고 서버 내렸다 올릴 필요 없음
+
+=== 한계
+* 컴파일(빌드) 시점의 체크가 약함
+* SQL, 로직의 중복
+* 테스트 코드 작성의 어려움
+
+=== 뭐라고 부를까?
+** Model 1?
+** https://velog.io/@dvmflstm/%EB%8F%84%EB%A9%94%EC%9D%B8-%EC%A3%BC%EB%8F%84-%EC%84%A4%EA%B3%84-04.-%EB%8F%84%EB%A9%94%EC%9D%B8%EC%9D%98-%EA%B2%A9%EB%A6%AC[SMART UI Pattern]
+
+== 레이어의 분리
+
+* java.util.Map의 한계
+** Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 있는지 확인하기 어렵다.
+* 실수, 고치기 어려움 -> 더 이상 초고속이 아니다.
+* 뭔가 객체가 필요하다
+** 그 객체의 역할은?
+** 뭐라고 불러야 하나?
+
+== 어떤 객체인가?
+
+=== Java Beans?
+* 그 역할을 하는 객체가 Setter가 꼭 있어야하는 것은 아니다.
+
+=== VO(Value Object)?
+* 너무 많은 의미로 쓰이고 있다.
+
+==== DTO
+
+=== DDD의 용어
+* Entity
+* Value Object
+
+== Entity 클래스가 만능으로 쓰일 때
+
+== Entity의 연관관계
+
+== Rich Domain Object
+
+== Immutable
+
+== Entity의 의존 관계
+
+== Lazy loading 다시 생각하기
+Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
+
+https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Jouney] 중
+
+Developer 2: To be clear, the aggregate boundary is here to group things that should change together for reasons of consistency. A lazy load would indicate that things that have been grouped together don't really need this grouping.
+
+Developer 1: I agree. I have found that lazy-loading in the command side means I have it modeled wrong. If I don't need the value in the command side, then it shouldn't be there.
+
+== 퍼시스템스 프레임워크 다시 보기
+
+* MyBatis
+* JPA
+* Spring JDBC
+
+== MyBatis
+* First level cache, Lazy loading로 인한 부작용
+* bulk data 처리에 유리한 batchUpdate 를 유도하기 위해서는 메서드 레벨로 분리호출하는 방식이 아닌, Framework 전체 설정을 고쳐야함
+executorType을 BATCH로 설정해서 sqlSession 따로 분리해야합니다.
+* 쿼리에 날아가는 시점이 불투명함.
+lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 update, select가 섞여 있을때는 Select전에 update를 몰아서 날리기도합니다.
+
+== 대안 Framework
+* JOOQ
+* Requery
+* Spring Data JDBC
+
+
+== 정리
+* 선을 넘는 Entity를 경계하자
+** 오퍼레케이션의 파라미터객체 API 응답 객체,
+** AggregateRoot 개념을 의식해서 Entity간 의존관계 끊기
+* 부작용이 적은 객체 설계가 우선이다. 프레임워크는 이를 뒷받침해야 한다.
