@@ -1,0 +1,18 @@
+= 엔티티 클래스의 설계와 퍼시스턴스 프레임워크의 활용
+:toc:
+:deckjs_theme: swiss
+
+== Slide 0
+
+[source,java]
+-----
+public class My {
+
+}
+-----
+
+== Slide 1
+[%step]
+* Foo
+* Bar
+* World

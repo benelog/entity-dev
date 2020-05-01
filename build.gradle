@@ -1,0 +1,46 @@
+plugins {
+    id 'org.asciidoctor.convert' version '2.4.0'
+    id 'org.ajoberstar.git-publish' version '2.1.1'
+    id 'org.ec4j.editorconfig' version '0.0.3'
+}
+
+asciidoctor {
+    sourceDir = file('src')
+	options template_dirs : [file('templates/haml').absolutePath]
+	attributes 'revnumber': '0.0.1'
+    sources {
+        include 'index.adoc'
+    }
+    resources {
+        from(sourceDir) {
+            include 'images/**'
+        }
+    }
+
+	resources {
+		from(file('templates')) {
+			include 'deck.js/**'
+		}
+	}
+
+    backends = ['html']
+    separateOutputDirs = false
+}
+
+gitPublish {
+    repoUri = 'git@github.com:benelog/entity-dev.git'
+    branch = 'gh-pages'
+    contents {
+        from(asciidoctor.outputDir) {
+            into '.'
+        }
+    }
+}
+
+editorconfig {
+    excludes = ["${buildDir}", "templates"]
+}
+
+build.dependsOn asciidoctor
+gitPublishCommit.dependsOn build
+check.dependsOn editorconfigCheck
