@@ -1,0 +1,6 @@
+build
+public
+.idea
+*.iml
+.gradle
+
