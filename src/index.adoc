@@ -6,93 +6,200 @@
 == 발표자 소개
 * (2004~2008) 삼성 SDS : 공공기관 프로젝트 참여
 * (2008~2020) 네이버 : 다양한 조직의 코드를 구경할 기회가 많았음
-* 대부분 DB와 붙여서 개발하는 프로젝트를 수행
+* 대부분 DB와 연결된 기능을 개발하는 프로젝트를 수행
 ** 매번 반복되는 고민들이 있었다.
 
 == 화두
-* DB와 연관된 클래스를 만들어야할까?
-** 결국 DB로 들어갈 값을 실어나르는 클래스 또는 DB에 persistent하게 저장될 클래스?
-* 프레임워크는 어떤 것을 써야 할까?
+* DB 테이블과 연관된 클래스를 어떻게 만들어야할까?
+* 퍼시스턴스 프레임워크는 어떤 것을 써야 할까?
 
+= 난관의 여정
 == 최고속(?) 웹개발 스타일
-Spring Boot를 이용한 예제
+(Spring Boot + JSP 안에 SQL이 들어간 예제 Demo)
 
 === 어떤 분들에게는 감동의 지점
 * 파일 하나만 보면 됨
-* 고치고 서버 내렸다 올릴 필요 없음
+* SQL 고치고 서버 내렸다 올릴 필요 없음
 
 === 한계
-* 컴파일(빌드) 시점의 체크가 약함
+* 컴파일(빌드) 시점에 속성명, 타입이 검사되지 않음
 * SQL, 로직의 중복
 * 테스트 코드 작성의 어려움
 
 === 뭐라고 부를까?
-** Model 1?
-** https://velog.io/@dvmflstm/%EB%8F%84%EB%A9%94%EC%9D%B8-%EC%A3%BC%EB%8F%84-%EC%84%A4%EA%B3%84-04.-%EB%8F%84%EB%A9%94%EC%9D%B8%EC%9D%98-%EA%B2%A9%EB%A6%AC[SMART UI Pattern]
+* Model 1?
+* https://velog.io/@dvmflstm/%EB%8F%84%EB%A9%94%EC%9D%B8-%EC%A3%BC%EB%8F%84-%EC%84%A4%EA%B3%84-04.-%EB%8F%84%EB%A9%94%EC%9D%B8%EC%9D%98-%EA%B2%A9%EB%A6%AC[SMART UI 패턴]
+** https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215[Domain-Driven Design(에릭에반스, 2003)]의 1장에서 소개
 
-== 레이어의 분리
 
-* java.util.Map의 한계
+== 뷰 레이어의 분리
+* `java.util.Map` 의 한계
 ** Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 있는지 확인하기 어렵다.
 * 실수, 고치기 어려움 -> 더 이상 초고속이 아니다.
 * 뭔가 객체가 필요하다
-** 그 객체의 역할은?
-** 뭐라고 불러야 하나?
 
-== 어떤 객체인가?
+(JSP에서 SQL을 분리한 예제 데모)
+
+== 만능 클래스(1)
+응답,요청에 필요한 모든 속성을 하나의 클래스에 정의
+
+[source,java]
+----
+
+// 컨퍼런스 발표
+public class Presentation {
+     private int id;
+     @JsonIgnore
+     private User createdBy; // 관리 담당자가 JSON 응답에 노출된 필요가 없음
+     private String title;
+     private int year; // 연도별 검색 조건에서 필요
+}
+----
+
+[source,java]
+.JPA,Jackson,Swagger 아노테이션이 다 하나에
+----
+
+// 컨퍼런스 발표
+@Entity("presenation")
+@ApiModel(value = "Presentation", description = "발표")
+public class Presentation {
+	 @Column("id")
+     private Integer id;
+
+     @ApiModelProperty("발표 제목")
+	 @Column("title")
+     private String title;
+
+     @JsonIgnore // 발표 승인자는 JSON응답에서 숭김
+     private User approvedBy;
+}
+----
+
+
+== 만능 클래스(2)
+여러 테이블의 JOIN된 결과를 담은  클래스
+
+[source,java]
+----
+
+// 발표 세션
+public class Program {
+     private String title; // confernce 테이블에서 조회
+     private Instant startedAt; //
+     private Instant endedAt;
+     private boolean myPick;
+
+}
+----
+
+= 길을 찾기
+== 패턴과 이름
+* 그 클래스를 뭐라고 불러야하나?
 
 === Java Beans?
-* 그 역할을 하는 객체가 Setter가 꼭 있어야하는 것은 아니다.
+* https://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans Spec]이 있음
+** https://docs.oracle.com/javase/7/docs/api/java/beans/PropertyChangeSupport.html[java.beans.PropertyChangeSupport] 와 같은 클래스도 있음.
+** 현재 이 스펙을 다 의식하고 개발하는 사람은 거의 없음.
+** getter/setter는 많은 프레임워크에서 활용되고 있고는 있음.
+** 그 역할을 하는 객체가 Setter가 꼭 있어야하는 것은 아니다.
 
-=== VO(Value Object)?
-* 너무 많은 의미로 쓰이고 있다.
+=== VO (Value Object)?
+* 과도하게 넓은 의미로 쓰이고 있다. : https://wiki.c2.com/?DataHolder[Data Holder]의 의미로
+** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0130648841[Core J2EE Pattern 1판(2001년)]에서는 TO(Transfer Object)를 VO라고 적었었음
+** DTO와 동일한 의미라고 밝힌 서적도 있음.
+*** https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC[Professional Java EE Design Patterns(2014)]
+*** https://www.amazon.com/Architecting-Modern-Java-Applications-business-oriented/dp/1788393856/[Architecting Modern Java EE Applications(2017)]
+* 보편적인 정의 : 값이 같으면 동일하다고 간주되는 작은 객체: 예) Money, Color
+** https://en.wikipedia.org/wiki/Value_object
+** https://martinfowler.com/bliki/ValueObject.html
+** https://openjdk.java.net/jeps/169[JEP 169 : Value Object]도 이 맥락
+** DDD 맥락에서도 이 범위에 따라 쓰고 있음. 추천하는 정의)
 
-==== DTO
+=== DTO
+* 역시나 Data holder 객체를 읽컷는 말로 요즘은 폭넓게 쓰이고 있음
+* 원격호출을 줄이려는 맥락에서 나옴
+** https://en.wikipedia.org/wiki/Data_transfer_object[Wikipedia의 DTO 페이지]에서도 그렇게 소개
+** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464[Core J2EE Pattern 2판(2003년)]에서는 TO로 명명
+* 해결하는 문제와 맥락이 달라졌는데, 같은 패턴 용어를 쓸 수 있을까?
+** '레이어 간의 경계를 넘어서 데이터를 전달하는 객체'라는 역할은 과거와 동일하다고 생각할 수도 있음.
+** 다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
+*** 예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
+
+=== Entity
+* 사전적 의미 : 실체. https://dictionary.cambridge.org/ko/%EC%82%AC%EC%A0%84/%EC%98%81%EC%96%B4/entity[Something that exists apart from other things, having its own independent existence]
+* JPA의 `@Entity` 로 익숙
 
 === DDD의 용어
-* Entity
-* Value Object
+* Entity : 식별성이 있는 도메인 오브젝트
+* Value Object : 실별성 없이 값만으로 동일성 판단
 
-== Entity 클래스가 만능으로 쓰일 때
+== Entity를 뷰, 외부 레이어에는 감추기
 
-== Entity의 연관관계
-
-== Rich Domain Object
-
-== Immutable
-
-== Entity의 의존 관계
+== Aggregate로 Entity 간의 선긋기
+* JOIN 감추기
+* 도메인 이벤트 활용
 
 == Lazy loading 다시 생각하기
 Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 
-https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Jouney] 중
-
+[quote]
+.https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Jouney의 Chapter 3] 중에서
+----
 Developer 2: To be clear, the aggregate boundary is here to group things that should change together for reasons of consistency. A lazy load would indicate that things that have been grouped together don't really need this grouping.
 
 Developer 1: I agree. I have found that lazy-loading in the command side means I have it modeled wrong. If I don't need the value in the command side, then it shouldn't be there.
+----
 
-== 퍼시스템스 프레임워크 다시 보기
+== Immutable vs Rich Domain Object
 
-* MyBatis
-* JPA
-* Spring JDBC
+= 퍼시스턴스 프레임워크
+
+== 프레임워크 다시 생각하기
+* '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴로워진다.
+** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크에서 복잡한 일을 안 해줘도 된다.
+* 편리성에 함정에 빠질 수 있는 프레임워크 사용법에 대해서 주의해야 한다.
+
+== Spring JDBC
+
+== JPA
+* ORM MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해준다.
 
 == MyBatis
 * First level cache, Lazy loading로 인한 부작용
 * bulk data 처리에 유리한 batchUpdate 를 유도하기 위해서는 메서드 레벨로 분리호출하는 방식이 아닌, Framework 전체 설정을 고쳐야함
-executorType을 BATCH로 설정해서 sqlSession 따로 분리해야합니다.
-* 쿼리에 날아가는 시점이 불투명함.
-lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 update, select가 섞여 있을때는 Select전에 update를 몰아서 날리기도합니다.
+executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
+* 쿼리가 실행되는 시점이 불투명함.
+lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 update, select가 섞여 있을때는 Select전에 update를 몰아서 날리기도 함.
+
+== 프레임워크 활용 전략
+* 프레임워크를 섞어서 사용
+** CUD + 단순 R : JPA
+** 복합적인 R
+*** JPA를 써도 QueryDSL이나 Native Query등으로 이미 분리된 패턴으로 구현하고 있을 것임
+*** Spring JDBC를 추천 : 단순한 쿼리 실행기, 확장 가능
+* 하나의 프레임워크로 통일한다면 Spring Data JDBC도 고려해볼만함
+** Entity 단위의 접근이 어렵다면 Spring JDBC처럼 사용하면 됨.
+
+== 아키텍처 전락
+( READ API 서버를 분리한 사례)
 
 == 대안 Framework
 * JOOQ
 * Requery
 * Spring Data JDBC
 
+= 정리
+== 요약
+* 선을 넘지 않는 Entity
+** 외부 레이어에 Entity 감추기
+** Aggregate 단위로 Entity간의 경계 치기
+** 복합적인 R을 담을 클래스 분리
+* 프레임워크는 설계를 거들 뿐
+** 프레임워크에서 주는 제약이 설계에 도움을 주기도한다.
+** 편의성을 주는 기능이 설계를 해치기도 한다.
 
-== 정리
-* 선을 넘는 Entity를 경계하자
-** 오퍼레케이션의 파라미터객체 API 응답 객체,
-** AggregateRoot 개념을 의식해서 Entity간 의존관계 끊기
-* 부작용이 적은 객체 설계가 우선이다. 프레임워크는 이를 뒷받침해야 한다.
+== 키워드
+* Aggregate
+
+== 참고 & 추천 자료
