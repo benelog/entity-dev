@@ -1,46 +1,28 @@
 plugins {
-    id 'org.asciidoctor.convert' version '2.4.0'
+    id "at.phatbl.shellexec" version "1.5.2"
     id 'org.ajoberstar.git-publish' version '2.1.1'
     id 'org.ec4j.editorconfig' version '0.0.3'
 }
 
-asciidoctor {
-    sourceDir = file('src')
-	options template_dirs : [file('templates/haml').absolutePath]
-	attributes 'revnumber': '0.0.1'
-    sources {
-        include 'index.adoc'
-    }
-    resources {
-        from(sourceDir) {
-            include 'images/**'
-        }
-    }
+import at.phatbl.shellexec.ShellExec
 
-	resources {
-		from(file('templates')) {
-			include 'deck.js/**'
-		}
-	}
-
-    backends = ['html']
-    separateOutputDirs = false
+task asciidoc(type: ShellExec) {
+    command './make_slides.sh'
 }
 
 gitPublish {
     repoUri = 'git@github.com:benelog/entity-dev.git'
     branch = 'gh-pages'
     contents {
-        from(asciidoctor.outputDir) {
+        from("${buildDir}/asciidoc") {
             into '.'
         }
     }
 }
 
 editorconfig {
-    excludes = ["${buildDir}", "templates"]
+    excludes = ["${buildDir}"]
 }
 
-build.dependsOn asciidoctor
-gitPublishCommit.dependsOn build
-check.dependsOn editorconfigCheck
+gitPublishCommit.dependsOn asciidoc
+asciidoc.dependsOn editorconfigCheck

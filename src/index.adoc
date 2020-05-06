@@ -1,103 +1,142 @@
-= 엔티티 클래스의 설계와 퍼시스턴스 프레임워크의 활용
+= 엔티티 클래스 설계와 퍼시스턴스 프레임워크
 :toc:
 :doctype: book
 :deckjs_theme: swiss
+:author: 정상혁
+:revdate: 2020-05-07
+:revnumber: 1.0
+:backend: deckjs
 
-== 발표자 소개
-* (2004~2008) 삼성 SDS : 공공기관 프로젝트 참여
-* (2008~2020) 네이버 : 다양한 조직의 코드를 구경할 기회가 많았음
-* 대부분 DB와 연결된 기능을 개발하는 프로젝트를 수행
-** 매번 반복되는 고민들이 있었다.
+== 발표자 & 주제 소개
 
-== 화두
+=== 발표자 : 정상혁
+
+[incremental="true"]
+* (2004~2008) 삼성 SDS : 공공기관 SI 프로젝트 참여
+* (2008~2020) 네이버 : 다양한 조직의 코드를 분석할 기회가 많았음
+* 돌아보니 대부분 DB와 연결된 기능을 개발하는 프로젝트를 수행
+
+=== 반복되는 고민
+
+[incremental="true"]
 * DB 테이블과 연관된 클래스를 어떻게 만들어야할까?
 * 퍼시스턴스 프레임워크는 어떤 것을 써야 할까?
 
 = 난관의 여정
+
 == 최고속(?) 웹개발 스타일
-(Spring Boot + JSP 안에 SQL이 들어간 예제 Demo)
+
+=== Spring Boot + JSP
+
+[incremental="true"]
+* JSP 안에 SQL이 들어간 예제 Demo
 
 === 어떤 분들에게는 감동의 지점
+
+[incremental="true"]
 * 파일 하나만 보면 됨
 * SQL 고치고 서버 내렸다 올릴 필요 없음
 
 === 한계
+
+[incremental="true"]
 * 컴파일(빌드) 시점에 속성명, 타입이 검사되지 않음
 * SQL, 로직의 중복
 * 테스트 코드 작성의 어려움
 
 === 뭐라고 부를까?
+
+[incremental="true"]
 * Model 1?
-* https://velog.io/@dvmflstm/%EB%8F%84%EB%A9%94%EC%9D%B8-%EC%A3%BC%EB%8F%84-%EC%84%A4%EA%B3%84-04.-%EB%8F%84%EB%A9%94%EC%9D%B8%EC%9D%98-%EA%B2%A9%EB%A6%AC[SMART UI 패턴]
+* SMART UI 패턴
 ** https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215[Domain-Driven Design(에릭에반스, 2003)]의 1장에서 소개
 
-
 == 뷰 레이어의 분리
+
+[incremental="true"]
 * `java.util.Map` 의 한계
 ** Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 있는지 확인하기 어렵다.
-* 실수, 고치기 어려움 -> 더 이상 초고속이 아니다.
+** 실수, 고치기 어려움 -> 더 이상 초고속이 아니다.
 * 뭔가 객체가 필요하다
 
+[incremental="true"]
 (JSP에서 SQL을 분리한 예제 데모)
 
-== 만능 클래스(1)
-응답,요청에 필요한 모든 속성을 하나의 클래스에 정의
+== 만능 클래스 (1)
 
+[incremental="true"]
+DB 컬럼, 응답,요청에 필요한 모든 속성을 하나의 클래스에 정의
+
+[incremental="true"]
 [source,java]
 ----
-
-// 컨퍼런스 발표
-public class Presentation {
+public class Issue {
      private int id;
-     @JsonIgnore
-     private User createdBy; // 관리 담당자가 JSON 응답에 노출된 필요가 없음
      private String title;
-     private int year; // 연도별 검색 조건에서 필요
+     private List<Account> subscribers;
+     private String searchKeyword; // 검색어
+     private boolean subscribed; //내가 구독하고 있는지의 여부
 }
 ----
 
 [source,java]
-.JPA,Jackson,Swagger 아노테이션이 다 하나에
+.JPA,Jackson,Swagger의 애너테이션이 하나의 클래스에
 ----
 
-// 컨퍼런스 발표
-@Entity("presenation")
-@ApiModel(value = "Presentation", description = "발표")
-public class Presentation {
-	 @Column("id")
-     private Integer id;
+@Entity
+@Table(indexes = {
+    @Index(columnList = "createdBy"),
+    @Index(columnList = "title")
+})
+@ApiModel(value = "Issue", description = "이슈")
+public class Issue {
+    @Column("id")
+    private Integer id;
 
-     @ApiModelProperty("발표 제목")
-	 @Column("title")
-     private String title;
+    @ApiModelProperty("이슈 제목")
+    @Column("title")
+    private String title;
 
-     @JsonIgnore // 발표 승인자는 JSON응답에서 숭김
-     private User approvedBy;
+    @JsonIgnore // 이슈 목록 조회때는 필요 없음.
+    private List<Account> unsubscribers;
 }
 ----
 
+== 만능 클래스 (2)
 
-== 만능 클래스(2)
-여러 테이블의 JOIN된 결과를 담은  클래스
+연관된 모든 테이블의 데이터를 담은 클래스
 
 [source,java]
 ----
-
-// 발표 세션
-public class Program {
-     private String title; // confernce 테이블에서 조회
-     private Instant startedAt; //
-     private Instant endedAt;
-     private boolean myPick;
-
+public class Issue {
+     private Repo repo;
+     private List<Comment> comments;
+     private List<Label> labels;
+     private Milestone milestone;
+     private List<Account> partipants;
 }
 ----
 
-= 길을 찾기
+=== 사례
+
+[incremental="true"]
+* Account(사용자 계정) 객체에 userId가 있는 모든 테이블과 대응되는 객체를 의존하는 경우
+** JPA 양방향 참조를 남용한 경우
+
+[incremental="true"]
+* 성능 저하 혹은 Lazy loading 필요
+* Lazy loading을 안 쓴다면
+*** `Issue.getComments()` 에 값이 채워질지 아닐지는 DAO 내부까지 따라가봐아 알수 있다.
+*** 비슷한 메서드가 여러개 생길수도 있다.
+**** `findIssueById()`, `findIssueByIdWithComments()`
+
+= 해법 찾기
 == 패턴과 이름
 * 그 클래스를 뭐라고 불러야하나?
 
 === Java Beans?
+
+[incremental="true"]
 * https://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans Spec]이 있음
 ** https://docs.oracle.com/javase/7/docs/api/java/beans/PropertyChangeSupport.html[java.beans.PropertyChangeSupport] 와 같은 클래스도 있음.
 ** 현재 이 스펙을 다 의식하고 개발하는 사람은 거의 없음.
@@ -105,19 +144,25 @@ public class Program {
 ** 그 역할을 하는 객체가 Setter가 꼭 있어야하는 것은 아니다.
 
 === VO (Value Object)?
+
+[incremental="true"]
 * 과도하게 넓은 의미로 쓰이고 있다. : https://wiki.c2.com/?DataHolder[Data Holder]의 의미로
 ** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0130648841[Core J2EE Pattern 1판(2001년)]에서는 TO(Transfer Object)를 VO라고 적었었음
 ** DTO와 동일한 의미라고 밝힌 서적도 있음.
 *** https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC[Professional Java EE Design Patterns(2014)]
 *** https://www.amazon.com/Architecting-Modern-Java-Applications-business-oriented/dp/1788393856/[Architecting Modern Java EE Applications(2017)]
-* 보편적인 정의 : 값이 같으면 동일하다고 간주되는 작은 객체: 예) Money, Color
-** https://en.wikipedia.org/wiki/Value_object
-** https://martinfowler.com/bliki/ValueObject.html
-** https://openjdk.java.net/jeps/169[JEP 169 : Value Object]도 이 맥락
-** DDD 맥락에서도 이 범위에 따라 쓰고 있음. 추천하는 정의)
+* 보편적인 정의 : 값이 같으면 동일하다고 간주되는 작은 객체 (예 : Money, Color )
+** https://en.wikipedia.org/wiki/Value_object[위키페디아의 정의]
+** https://martinfowler.com/bliki/ValueObject.html[마틴파울러의 정의]
+** https://openjdk.java.net/jeps/169[JEP 169 : Value Object]
+** DDD 맥락에서도 이 범위에 따라 쓰고 있음.
 
 === DTO
-* 역시나 Data holder 객체를 읽컷는 말로 요즘은 폭넓게 쓰이고 있음
+
+[incremental="true"]
+* 네트워크 전송 시의 Data holder 역할로 요즘은 폭넓게 쓰이고 있음
+** https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5[MSDN의 DTO(데이터 전송 개체) 만들기]에서는 '네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체'
+** https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_05_PaymentsBC.markdown[CQRS journey 5장] : 수정할 속성을 담는 객체도 DTO로 정의
 * 원격호출을 줄이려는 맥락에서 나옴
 ** https://en.wikipedia.org/wiki/Data_transfer_object[Wikipedia의 DTO 페이지]에서도 그렇게 소개
 ** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464[Core J2EE Pattern 2판(2003년)]에서는 TO로 명명
@@ -127,21 +172,137 @@ public class Program {
 *** 예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
 
 === Entity
+
+[incremental="true"]
 * 사전적 의미 : 실체. https://dictionary.cambridge.org/ko/%EC%82%AC%EC%A0%84/%EC%98%81%EC%96%B4/entity[Something that exists apart from other things, having its own independent existence]
-* JPA의 `@Entity` 로 익숙
+* JPA의 `@Entity` 로 익숙한 개념 : DB 테이블과 대응되는 객체
 
 === DDD의 용어
-* Entity : 식별성이 있는 도메인 오브젝트
-* Value Object : 실별성 없이 값만으로 동일성 판단
+
+(DDD 책에서 처럼 대문자료 표기)
+
+[incremental="true"]
+* ENTITY : 식별성이 있는 도메인 오브젝트
+* VALUE OBJECT : 실별성 없이 값만으로 동일성 판단
 
 == Entity를 뷰, 외부 레이어에는 감추기
 
-== Aggregate로 Entity 간의 선긋기
-* JOIN 감추기
-* 도메인 이벤트 활용
+[incremental="true"]
+* 역할별로 구분된 DTO 정의 예
+** 이슈 조회 JSON 응답 : IssueResponse, IssueDto, IssueDetailDto
+** 이슈 생성 JSON 요청 : IssueCreationRequest, IssueCreationCommand
+
+== AGGREGATE로 ENTITY 간의 선긋기
+
+=== AGGREGATE는?
+
+[incremental="true"]
+* 하나의 단위로써 취급되는 연관된 객체군
+** 엄격한 데이터 일관성, 제약사항이 유지되어야 할 단위
+** Transaction, 불변식(Invariants, 데이터가 변경될 때마다 유지돼야 하는 규칙)이 적용되는 단위
+* AGGREGATE 1개당 REPOSITORY 1개
+** AGGREGATE ROOT를 통해서 AGGREGATE 밖에서 AGGEGATE 안의 객체로 접근함.
+* Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋다
+
+[source,java]
+.AGGREGATE_ROOT로 저장 대상 타입을 표현해본 명시해본 CrudRepository
+----
+public interface CrudRepository<AGGREGATE_ROOT, ID> extends Repository<AGGREGATE_ROOT, ID> {
+    Optional<AGGREGATE_ROOT> findById(ID id);
+    ...
+}
+----
+
+===  AGGREGATE 경계가 있는 시스템
+
+[incremental="true"]
+* 별도의 저장소나 API 서버를 분리할 때 상대적으로 유리
+** AGGREGATE 밖은 eventual consistancy를 목표로 할 수도 있다.
+* AGGREGATE별로 Cache를 적용하기에도 좋다
+* 분리할 계획이 없더라도 코드를 고칠 때 영향성을 파악하기가 유리하다.
+
+=== AGGREGATE 식별시 의식할 점
+
+[incremental="true"]
+* CUD + 단순R(findById) 를 우선시 하여
+** 모든 R을 다 포용하려고 한다면 깊은 객체 그래프가 나온다.
+* (JPA를 쓴다면) Cascade를 써도 되는 범위인가?
+
+== AGGREGATE 간의 참조
+
+[incremental="true"]
+* 다른 Aggregate의 Root를 직접 참조하지 않고 ID로만 참조하기
+
+[incremental="true"]
+[quote]
+.https://stackoverflow.com/a/4922100[Stackoverflow]의 한 답변
+----
+It makes life much easier if you just keep a reference of the aggregate's ID rather than the actual aggregate itself.
+----
+
+[incremental="true"]
+[source,java]
+----
+public class Issue  {
+    private Repo repo;
+}
+----
+
+->
+
+[incremental="true"]
+[source,java]
+----
+public class Issue  {
+    private long repoId;
+}
+----
+
+참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋다.
+
+[incremental="true"]
+[source,java]
+----
+
+public class Issue  {
+    private Association<Repo> repoId;
+}
+----
+
+[incremental="true"]
+[source,java]
+----
+
+public class Association<T>  {
+    private final long id;
+
+    public Association(long id) {
+        this.id = id;
+    }
+}
+----
+
+* https://github.com/spring-projects/spring-data-jdbc/blob/master/spring-data-jdbc/src/main/java/org/springframework/data/jdbc/core/mapping/AggregateReference.java[Spring Data JDBC의 AggregateReference] 도 같은 역할
+
+== 여러 AGGREGATE에 걸친 조회
+
+== REPOSITORY vs DAO
+
+[incremental="true"]
+* DAO는 퍼시스턴스 레이어를 캡슐화
+* DDD의 REPOSITORY는 도메인 레이어에 객체 지향적인 컬렉션 관리 인터페이스를 제공
+
+[quote]
+.http://aeternum.egloos.com/1160846[DAO와 REPOSITORY 논쟁] 중에서
+----
+개인적으로 TRANSACTION SCRIPT 패턴에 따라 도메인 레이어가 구성되고 퍼시스턴스 레이어에 대한 FAÇADE의 역할을 하는 객체가 추가될 때는 거리낌 없이 DAO라고 부른다.
+도메인 레이어가 DOMAIN MDOEL 패턴으로 구성되고 도메인 레이어 내에 객체 컬렉션에 대한 인터페이스가 필요한 경우에는 REPOSITORY라고 부른다.
+결과적으로 두 객체의 인터페이스의 차이가 보잘 것 없다고 하더라도 DAO가 등장하게된 시대적 배경과 현재까지 변화되어온 과정 동안 개발 커뮤니티에 끼친 영향력을 깨끗이 지워 버리지 않는 한 DAO와 REPOSITORY를 혼용해서 사용하는 것은 더 큰 논쟁의 불씨를 남기는 것이라고 생각한다
+----
 
 == Lazy loading 다시 생각하기
-Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
+
+* Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 
 [quote]
 .https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Jouney의 Chapter 3] 중에서
@@ -156,23 +317,33 @@ Developer 1: I agree. I have found that lazy-loading in the command side means I
 = 퍼시스턴스 프레임워크
 
 == 프레임워크 다시 생각하기
+
+[incremental="true"]
 * '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴로워진다.
-** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크에서 복잡한 일을 안 해줘도 된다.
+** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크의 마법이 필수적이지 않다.
 * 편리성에 함정에 빠질 수 있는 프레임워크 사용법에 대해서 주의해야 한다.
 
 == Spring JDBC
 
 == JPA
-* ORM MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해준다.
+
+* OR-MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해준다.
 
 == MyBatis
+
 * First level cache, Lazy loading로 인한 부작용
-* bulk data 처리에 유리한 batchUpdate 를 유도하기 위해서는 메서드 레벨로 분리호출하는 방식이 아닌, Framework 전체 설정을 고쳐야함
-executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
+* bulk data 처리에 유리한 batchUpdate 를 유도하기 위해서는 메서드 레벨로 분리호출하는 방식이 아닌, Framework 전체 설정을 고쳐야함 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
 * 쿼리가 실행되는 시점이 불투명함.
 lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 update, select가 섞여 있을때는 Select전에 update를 몰아서 날리기도 함.
 
+== 대안 Framework
+
+* JOOQ
+* Requery
+* Spring Data JDBC -> 다음 세션
+
 == 프레임워크 활용 전략
+
 * 프레임워크를 섞어서 사용
 ** CUD + 단순 R : JPA
 ** 복합적인 R
@@ -181,25 +352,47 @@ lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 u
 * 하나의 프레임워크로 통일한다면 Spring Data JDBC도 고려해볼만함
 ** Entity 단위의 접근이 어렵다면 Spring JDBC처럼 사용하면 됨.
 
-== 아키텍처 전락
-( READ API 서버를 분리한 사례)
+=== 아키텍처 전락
 
-== 대안 Framework
-* JOOQ
-* Requery
-* Spring Data JDBC
+* AGGREGATE가 단위로 정리하기 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만하다.
+
+=== 실무 사례 : 복합조회 API 서버 분리
+
+[incremental="true"]
+* 복잡한 쿼리를 담당하는 별도의 API서버 개발
+* AGGREAGATE 경계를 넘어서는 복잡한 조회를 Native SQL 위주로 개발
+** Spring JDBC + Spring Data JDBC의 일부 기능 사용
+** REPOSITORY가 아닌 DAO 개념으로 접근
 
 = 정리
 == 요약
-* 선을 넘지 않는 Entity
-** 외부 레이어에 Entity 감추기
-** Aggregate 단위로 Entity간의 경계 치기
+[incremental="true"]
+* 선을 넘지 않는 ENTITY
+** 외부 레이어에 ENTITY 감추기
+** AGGREGATE 단위로 ENTITY간의 경계 의식하기 (ID만 참조)
 ** 복합적인 R을 담을 클래스 분리
 * 프레임워크는 설계를 거들 뿐
 ** 프레임워크에서 주는 제약이 설계에 도움을 주기도한다.
 ** 편의성을 주는 기능이 설계를 해치기도 한다.
+* 때로는 다른 가치를 위해 더 긴 코드를 만들 수도 있다.
+** 고치기 쉬운 , 협업하기 쉬운, 확장하기 쉬운 코드
 
 == 키워드
-* Aggregate
+
+* AGGREGATE ROOT
 
 == 참고 & 추천 자료
+
+* https://www.popit.kr/%EC%97%90%EA%B7%B8%EB%A6%AC%EA%B2%8C%EC%9E%87-%ED%95%98%EB%82%98%EC%97%90-%EB%A6%AC%ED%8C%8C%EC%A7%80%ED%86%A0%EB%A6%AC-%ED%95%98%EB%82%98/[애그리게잇 하나에 리파지토리 하나]
+* http://aeternum.egloos.com/1160846[DAO와 REPOSITORY 논쟁]
+* https://spring.io/blog/2018/09/24/spring-data-jdbc-references-and-aggregates[Spring Data JDBC, References, and Aggregates]
+* https://www.slideshare.net/SpringCentral/domaindriven-design-with-relational-databases-using-spring-data-jdbc[Domain-Driven Design with Relational Databases Using Spring Data JDBC] (SpringOne Platform 2019의 발표)
+** https://youtu.be/GOSW911Ox6s[발표 영상]
+* Effective Aggregate Design
+** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf[Part I: Modeling a Single Aggregate]
+** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf[Part II: Making Aggregates Work Together]
+** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_3.pdf[Part III: Gaining Insight Through Discovery]
+* https://www.slideshare.net/baejjae93/ss-151545329[우아한 객체지향] (우아한 테크 세미나 2019.06.20)
+** 99쪽 : 어떤 객체를 묶고 어떤 객체들을 분리할 것인가?
+** 103쪽 : 경계 밖의 객체는 ID를 이용해 접근
+** 169쪽 : 도메인 단위 모듈 = 시스템 분리의 기반
