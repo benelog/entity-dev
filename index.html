@@ -2336,10 +2336,15 @@ This module splits a long slide into multiple slides.
 <h3 id="_발표자_정상혁">발표자 : 정상혁</h3>
 <ul>
 <li class=" slide">
+이력
+<ul>
+<li class="">
 (2004~2008) 삼성 SDS : 공공기관 SI 프로젝트 참여
 </li>
-<li class=" slide">
+<li class="">
 (2008~2020) 네이버 : 다양한 조직의 코드를 분석할 기회가 많았음
+</li>
+</ul>
 </li>
 <li class=" slide">
 돌아보니 대부분 DB와 연결된 기능을 개발하는 프로젝트를 수행
@@ -2360,15 +2365,93 @@ DB 테이블과 연관된 클래스를 어떻게 만들어야할까?
 </section>
 <h1 id="_난관의_여정">난관의 여정</h1>
 <section class="slide">
-<h2>최고속(?) 웹개발 스타일</h2>
-<div class="sect2">
-<h3 id="_spring_boot_jsp">Spring Boot + JSP</h3>
-<ul>
-<li class=" slide">
-JSP 안에 SQL이 들어간 예제 Demo
-</li>
-</ul>
-</div>
+<h2>최고속(?) 웹개발 스타일 예제</h2>
+<p>Spring Boot + JSP</p>
+<div class="listingblock">
+<div class="title">Spring Boot에서 URL to JSP 매핑 선언</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Application</span> <span style="font-weight: bold"><span style="color: #0000FF">extends</span></span> WebMvcConfigurerAdapter <span style="color: #FF0000">{</span>
+    @Override
+    <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">addViewControllers</span></span><span style="color: #990000">(</span><span style="color: #008080">ViewControllerRegistry</span> registry<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>           <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">addViewControllers</span></span><span style="color: #990000">(</span><span style="color: #008080">ViewControllerRegistry</span> registry<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+        registry<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">addViewController</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"/repos"</span><span style="color: #990000">).</span><span style="font-weight: bold"><span style="color: #000000">setViewName</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"repos"</span><span style="color: #990000">);</span>
+    <span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="listingblock">
+<div class="title">repos.jsp</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>&lt;%@page import="org.springframework.jdbc.core.ColumnMapRowMapper"%&gt;
+&lt;%@page import="javax.servlet.jsp.tagext.TryCatchFinally"%&gt;
+&lt;%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%&gt;
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ page import="org.springframework.web.context.support.WebApplicationContextUtils"%&gt;
+&lt;%@ page import="org.springframework.web.context.WebApplicationContext"%&gt;
+&lt;%@ page import="javax.sql.DataSource"%&gt;
+&lt;%@ page import="java.util.List"%&gt;
+&lt;%@ page import="java.util.ArrayList"%&gt;
+&lt;%@ page import="java.util.Map"%&gt;
+&lt;%@ page import="java.util.HashMap"%&gt;
+&lt;%@ page import="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate"%&gt;
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;c:set</span></span> <span style="color: #009900">var</span><span style="color: #990000">=</span><span style="color: #FF0000">"sql"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+        SELECT r.name, r.description, a.name AS creator_name ,  a.email
+        FROM repo r
+                INNER JOIN account a ON a.id = r.created_by
+        WHERE a.email = :email
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;/c:set&gt;</span></span>
+
+&lt;%
+    String email = request.getParameter("email");
+    String sql = (String) pageContext.getAttribute("sql");
+
+    WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+    DataSource ds = (DataSource) ctx.getBean("dataSource");
+    NamedParameterJdbcTemplate db = new NamedParameterJdbcTemplate(ds);
+    Map<span style="font-weight: bold"><span style="color: #0000FF">&lt;String</span></span>, <span style="color: #009900">Object</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span> params = Map.of("email", email)
+
+    List<span style="font-weight: bold"><span style="color: #0000FF">&lt;Map</span></span>&lt;<span style="color: #009900">String</span>,<span style="color: #009900">Object</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>&gt; repos = db.<span style="font-weight: bold"><span style="color: #0000FF">&lt;Map</span></span>&lt;<span style="color: #009900">String</span>,<span style="color: #009900">Object</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>&gt;query(sql, params, new ColumnMapRowMapper());
+    request.setAttribute("repos", repos);
+%&gt;
+<span style="font-weight: bold"><span style="color: #000080">&lt;!DOCTYPE</span></span> <span style="color: #009900">html</span><span style="font-weight: bold"><span style="color: #000080">&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;html&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;head&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;meta</span></span> <span style="color: #009900">http-equiv</span><span style="color: #990000">=</span><span style="color: #FF0000">"Content-Type"</span> <span style="color: #009900">content</span><span style="color: #990000">=</span><span style="color: #FF0000">"text/html; charset=UTF-8"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;title&gt;</span></span>저장소 조회<span style="font-weight: bold"><span style="color: #0000FF">&lt;/title&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;/head&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;body&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;h1&gt;</span></span>저장소를 만든 사람의 이메일로 검색하기<span style="font-weight: bold"><span style="color: #0000FF">&lt;/h1&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;form</span></span> <span style="color: #009900">action</span><span style="color: #990000">=</span><span style="color: #FF0000">"/files"</span> <span style="color: #009900">method</span><span style="color: #990000">=</span><span style="color: #FF0000">"GET"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;h2&gt;</span></span>이메일 입력<span style="font-weight: bold"><span style="color: #0000FF">&lt;/h2&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;p&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;input</span></span> <span style="color: #009900">type</span><span style="color: #990000">=</span><span style="color: #FF0000">"text"</span> <span style="color: #009900">name</span><span style="color: #990000">=</span><span style="color: #FF0000">"email"</span> <span style="color: #009900">size</span><span style="color: #990000">=</span><span style="color: #FF0000">"40"</span> <span style="color: #009900">value</span><span style="color: #990000">=</span><span style="color: #FF0000">"${email}"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span> <span style="font-weight: bold"><span style="color: #0000FF">&lt;input</span></span> <span style="color: #009900">type</span><span style="color: #990000">=</span><span style="color: #FF0000">"submit"</span> <span style="color: #009900">value</span><span style="color: #990000">=</span><span style="color: #FF0000">"조회"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;/p&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;/form&gt;</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;h2&gt;</span></span>조회 결과<span style="font-weight: bold"><span style="color: #0000FF">&lt;/h2&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;table</span></span> <span style="color: #009900">border</span><span style="color: #990000">=</span><span style="color: #FF0000">"1"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;tr&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;th&gt;</span></span>저장소 이름<span style="font-weight: bold"><span style="color: #0000FF">&lt;/th&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;th&gt;</span></span>저장소 설명<span style="font-weight: bold"><span style="color: #0000FF">&lt;/th&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;th&gt;</span></span>생성자<span style="font-weight: bold"><span style="color: #0000FF">&lt;/th&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;th&gt;</span></span>이메일<span style="font-weight: bold"><span style="color: #0000FF">&lt;/th&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;/tr&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;c:forEach</span></span> <span style="color: #009900">var</span><span style="color: #990000">=</span><span style="color: #FF0000">"item"</span> <span style="color: #009900">items</span><span style="color: #990000">=</span><span style="color: #FF0000">"${repos}"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;tr&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;td&gt;</span></span>${item.name}<span style="font-weight: bold"><span style="color: #0000FF">&lt;/td&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;td&gt;</span></span>${item.description}<span style="font-weight: bold"><span style="color: #0000FF">&lt;/td&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;td&gt;</span></span>${item.creator_name}<span style="font-weight: bold"><span style="color: #0000FF">&lt;/td&gt;</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">&lt;td&gt;</span></span>${item.email}<span style="font-weight: bold"><span style="color: #0000FF">&lt;/td&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;/tr&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;/c:forEach&gt;</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">&lt;/table&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;/body&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;/html&gt;</span></span></tt></pre></div></div>
+</section>
+<section class="slide">
+<h2>최고속(?) 웹개발 스타일 분석</h2>
 <div class="sect2">
 <h3 id="_어떤_분들에게는_감동의_지점">어떤 분들에게는 감동의 지점</h3>
 <ul>
@@ -2377,20 +2460,6 @@ JSP 안에 SQL이 들어간 예제 Demo
 </li>
 <li class=" slide">
 SQL 고치고 서버 내렸다 올릴 필요 없음
-</li>
-</ul>
-</div>
-<div class="sect2">
-<h3 id="_한계">한계</h3>
-<ul>
-<li class=" slide">
-컴파일(빌드) 시점에 속성명, 타입이 검사되지 않음
-</li>
-<li class=" slide">
-SQL, 로직의 중복
-</li>
-<li class=" slide">
-테스트 코드 작성의 어려움
 </li>
 </ul>
 </div>
@@ -2410,9 +2479,22 @@ SMART UI 패턴
 </li>
 </ul>
 </div>
-</section>
-<section class="slide">
-<h2>뷰 레이어의 분리</h2>
+<div class="sect2">
+<h3 id="_한계">한계</h3>
+<ul>
+<li class=" slide">
+컴파일(빌드) 시점에 속성명, 타입이 검사되지 않음
+</li>
+<li class=" slide">
+SQL, 로직의 중복
+</li>
+<li class=" slide">
+테스트 코드 작성의 어려움
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_뷰_레이어의_분리">뷰 레이어의 분리</h3>
 <ul>
 <li class=" slide">
 <code>java.util.Map</code> 의 한계
@@ -2429,7 +2511,7 @@ Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 �
 뭔가 객체가 필요하다
 </li>
 </ul>
-<p>(JSP에서 SQL을 분리한 예제 데모)</p>
+</div>
 </section>
 <section class="slide">
 <h2>만능 클래스 (1)</h2>
@@ -2444,10 +2526,10 @@ http://www.gnu.org/software/src-highlite -->
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">String</span> title<span style="color: #990000">;</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Account&gt;</span> subscribers<span style="color: #990000">;</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">String</span> searchKeyword<span style="color: #990000">;</span> <span style="font-style: italic"><span style="color: #9A1900">// 검색어</span></span>
-     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #009900">boolean</span> subscribed<span style="color: #990000">;</span> <span style="font-style: italic"><span style="color: #9A1900">//내가 구독하고 있는지의 여부</span></span>
+     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #009900">boolean</span> subscribed<span style="color: #990000">;</span> <span style="font-style: italic"><span style="color: #9A1900">// 내가 구독하고 있는지의 여부</span></span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
-<div class="title">JPA,Jackson,Swagger의 애너테이션이 하나의 클래스에</div>
+<div class="title">JPA,Jackson JSON,Swagger의 애너테이션이 하나의 클래스에</div>
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -2486,27 +2568,48 @@ http://www.gnu.org/software/src-highlite -->
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">Milestone</span> milestone<span style="color: #990000">;</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Account&gt;</span> partipants<span style="color: #990000">;</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
-<div class="sect2">
-<h3 id="_사례">사례</h3>
 <ul>
 <li class=" slide">
-Account(사용자 계정) 객체에 userId가 있는 모든 테이블과 대응되는 객체를 의존하는 경우
+Account(사용자 계정) 객체가 account.id를 참조하는 모든 테이블과 대응되는 객체를 의존하는 경우
+</li>
+</ul>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Acount</span> <span style="color: #FF0000">{</span>
+     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Issue&gt;</span> myIssues<span style="color: #990000">;</span>
+     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Repo&gt;</span> myRepos<span style="color: #990000">;</span>
+     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Comment&gt;</span> myComment<span style="color: #990000">;</span>
+     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Label&gt;</span> myLabels<span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+<ul>
+<li class=" slide">
+User(Account) 캘래스를 보면 시스템의 규모나 ORM 사용 성숙도를 파아갛는데 도움이 됨.
+</li>
+</ul>
+<div class="sect2">
+<h3 id="_부작용">부작용</h3>
+<ul>
+<li class=" slide">
+성능 저하
 <ul>
 <li class="">
-JPA 양방향 참조를 남용한 경우
+항상 연관된 객체를 다 조회한다면 불필요한 쿼리가 많이 날아감
+</li>
+<li class="">
+N+1 쿼리 주의해야 함
 </li>
 </ul>
 </li>
 <li class=" slide">
-성능 저하 혹은 Lazy loading 필요
-</li>
-<li class=" slide">
-Lazy loading을 안 쓴다면
+Lazy loading을 쓰지 않고 수동으로 값을 채울 때의 난관
 <ul>
-<li class=" slide">
+<li class="">
 <code>Issue.getComments()</code> 에 값이 채워질지 아닐지는 DAO 내부까지 따라가봐아 알수 있다.
 </li>
-<li class=" slide">
+<li class="">
 비슷한 메서드가 여러개 생길수도 있다.
 <ul>
 <li class="">
@@ -2519,23 +2622,62 @@ Lazy loading을 안 쓴다면
 </ul>
 </div>
 </section>
+<section class="slide">
+<h2>만능 클래스가 뷰까지 바로 전달됨</h2>
+<ul>
+<li class=" slide">
+JSP/Freemarker에서 깊은 객체 탐색이 이루어질 가능성이 높음
+<ul>
+<li class="">
+객체 참조 관계를 바꾸는 비용이 큼
+</li>
+</ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">&lt;div&gt;</span></span>${issue.milestone.creator.email}<span style="font-weight: bold"><span style="color: #0000FF">&lt;/div&gt;</span></span></tt></pre></div></div>
+<ul>
+<li class=" slide">
+SMART UI 패턴이 그리워질 수도 있음.
+</li>
+</ul>
+</section>
 <h1 id="_해법_찾기">해법 찾기</h1>
 <section class="slide">
 <h2>패턴과 이름</h2>
 <ul>
+<li class=" slide">
+<em>그</em> 클래스를 뭐라고 불러야하나?
+</li>
+<li class=" slide">
+현장에서 많이 쓰이는 이름
+<ul>
 <li class="">
-그 클래스를 뭐라고 불러야하나?
+Java Beans
+</li>
+<li class="">
+VO
+</li>
+<li class="">
+DTO
+</li>
+<li class="">
+Entity
 </li>
 </ul>
-<div class="sect2">
-<h3 id="_java_beans">Java Beans?</h3>
+</li>
+</ul>
+</section>
+<section class="slide">
+<h2>Java Beans</h2>
 <ul>
 <li class=" slide">
 <a href="https://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html">JavaBeans Spec</a>이 있음
 <ul>
-<li class="">
-<a href="https://docs.oracle.com/javase/7/docs/api/java/beans/PropertyChangeSupport.html">java.beans.PropertyChangeSupport</a> 와 같은 클래스도 있음.
-</li>
 <li class="">
 현재 이 스펙을 다 의식하고 개발하는 사람은 거의 없음.
 </li>
@@ -2548,12 +2690,31 @@ getter/setter는 많은 프레임워크에서 활용되고 있고는 있음.
 </ul>
 </li>
 </ul>
-</div>
+</section>
+<section class="slide">
+<h2>VO vs DTO</h2>
 <div class="sect2">
-<h3 id="_vo_value_object">VO (Value Object)?</h3>
+<h3 id="_value_object">Value Object</h3>
 <ul>
 <li class=" slide">
-과도하게 넓은 의미로 쓰이고 있다. : <a href="https://wiki.c2.com/?DataHolder">Data Holder</a>의 의미로
+값이 같으면 동일하다고 간주되는 작은 객체 (예 : Money, Color )
+<ul>
+<li class="">
+<a href="https://martinfowler.com/bliki/ValueObject.html">마틴파울러의 정의</a>, <a href="https://en.wikipedia.org/wiki/Value_object">위키페디아의 정의</a>
+</li>
+<li class="">
+<a href="https://openjdk.java.net/jeps/169">JEP 169 : Value Object</a>
+</li>
+<li class="">
+DDD에서도 이 정의를 따르고 있음.
+</li>
+<li class="">
+<a href="https://docs.jboss.org/hibernate/stable/core.old/reference/en/html/mapping-types.html">Hibernate 메뉴얼의 Value Type</a>도 Value Object를 포함한다고 생각됨.
+</li>
+</ul>
+</li>
+<li class=" slide">
+과도하게 넓은 의미로 쓰이고 있다. <a href="https://wiki.c2.com/?DataHolder">Data Holder</a>의 의미로
 <ul>
 <li class="">
 <a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0130648841">Core J2EE Pattern 1판(2001년)</a>에서는 TO(Transfer Object)를 VO라고 적었었음
@@ -2571,30 +2732,24 @@ DTO와 동일한 의미라고 밝힌 서적도 있음.
 </li>
 </ul>
 </li>
-<li class=" slide">
-보편적인 정의 : 값이 같으면 동일하다고 간주되는 작은 객체 (예 : Money, Color )
-<ul>
-<li class="">
-<a href="https://en.wikipedia.org/wiki/Value_object">위키페디아의 정의</a>
-</li>
-<li class="">
-<a href="https://martinfowler.com/bliki/ValueObject.html">마틴파울러의 정의</a>
-</li>
-<li class="">
-<a href="https://openjdk.java.net/jeps/169">JEP 169 : Value Object</a>
-</li>
-<li class="">
-DDD 맥락에서도 이 범위에 따라 쓰고 있음.
-</li>
-</ul>
-</li>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_dto">DTO</h3>
+<h3 id="_dto_data_transfer_object">DTO (Data Transfer Object)</h3>
 <ul>
 <li class=" slide">
-네트워크 전송 시의 Data holder 역할로 요즘은 폭넓게 쓰이고 있음
+원격호출을 효율화하기 위해 나온 패턴
+<ul>
+<li class="">
+<a href="https://martinfowler.com/eaaCatalog/dataTransferObject.html">마틴 파울러의 페이지</a>에서 용어의 변천사까지 설명
+</li>
+<li class="">
+<a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464">Core J2EE Pattern 2판(2003년)</a>에서는 TO로 이름 붙임.
+</li>
+</ul>
+</li>
+<li class=" slide">
+네트워크 전송 시의 Data holder 역할로 요즘은 폭넓게 쓰이는 느낌
 <ul>
 <li class="">
 <a href="https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5">MSDN의 DTO(데이터 전송 개체) 만들기</a>에서는 <em>네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체</em>
@@ -2605,21 +2760,10 @@ DDD 맥락에서도 이 범위에 따라 쓰고 있음.
 </ul>
 </li>
 <li class=" slide">
-원격호출을 줄이려는 맥락에서 나옴
-<ul>
-<li class="">
-<a href="https://en.wikipedia.org/wiki/Data_transfer_object">Wikipedia의 DTO 페이지</a>에서도 그렇게 소개
-</li>
-<li class="">
-<a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464">Core J2EE Pattern 2판(2003년)</a>에서는 TO로 명명
-</li>
-</ul>
-</li>
-<li class=" slide">
 해결하는 문제와 맥락이 달라졌는데, 같은 패턴 용어를 쓸 수 있을까?
 <ul>
 <li class="">
-'레이어 간의 경계를 넘어서 데이터를 전달하는 객체'라는 역할은 과거와 동일하다고 생각할 수도 있음.
+'레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수도 있음.
 </li>
 <li class="">
 다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
@@ -2627,12 +2771,26 @@ DDD 맥락에서도 이 범위에 따라 쓰고 있음.
 <li class="">
 예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
 </li>
-</ul>
+<li class="">
+예) QueryDSL에서 DB조회 결과를 담을 객체
 </li>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="title"><a href="http://www.querydsl.com/static/querydsl/3.4.2/reference/html/ch03s02.html">QueryDSL 메뉴얼</a>에 있는 DTO 관련 예제</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #008080">List&lt;UserDTO&gt;</span> dtos <span style="color: #990000">=</span> query<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">list</span></span><span style="color: #990000">(</span>
+    Projections<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">fields</span></span><span style="color: #990000">(</span>UserDTO<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">class</span></span><span style="color: #990000">,</span> user<span style="color: #990000">.</span>firstName<span style="color: #990000">,</span> user<span style="color: #990000">.</span>lastName<span style="color: #990000">));</span></tt></pre></div></div>
 </div>
+</section>
+<section class="slide">
+<h2>Entity와 Value Object의 구분</h2>
 <div class="sect2">
 <h3 id="_entity">Entity</h3>
 <ul>
@@ -2644,21 +2802,79 @@ JPA의 <code>@Entity</code> 로 익숙한 개념 : DB 테이블과 대응되는 
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_ddd의_용어">DDD의 용어</h3>
+</section>
+<section class="slide">
+<h2>DDD의 패턴</h2>
 <p>(DDD 책에서 처럼 대문자료 표기)</p>
 <ul>
 <li class=" slide">
-ENTITY : 식별성이 있는 도메인 오브젝트
+ENTITY :  연속성과 식별성의 맥락에서 정의되는 객체
 </li>
 <li class=" slide">
-VALUE OBJECT : 실별성 없이 값만으로 동일성 판단
+VALUE OBJECT : 식별성 없이 속성만으로 동일성을 판단하는 객체
+</li>
+</ul>
+</section>
+<section class="slide">
+<h2>ENTITY를 뷰, 외부 레이어에는 감추기</h2>
+<div class="sect2">
+<h3 id="_entity가_ui_레이어에_바로_노출될_때의_문제점">ENTITY가 UI 레이어에 바로 노출될 때의 문제점</h3>
+<ul>
+<li class="">
+캡슐화를 지키기 어려워진다.
+<ul>
+<li class="">
+꼭 필요하지 않는 속성도 외부로 노출되어 향후 수정하기 어려워진다.
+</li>
+</ul>
+</li>
+<li class="">
+JSP, Freemarker에서의 객체 참조
+<ul>
+<li class="">
+컴파일 시점의 검사 범위가 좁다 &#8594; ENTITY 클래스를 수정했을때 뷰에서 에러가 나는 경우가 뒤늦게 발견된다.
+</li>
+</ul>
+</li>
+<li class="">
+JSON 응답
+<ul>
+<li class="">
+<code>@JsonIgnore</code> , <code>@JsonView</code> 같은 선언이 많아지면 JSON의 형태를 클래스만 보고 예측하는 난이도가 올라간다.
+</li>
+</ul>
 </li>
 </ul>
 </div>
-</section>
-<section class="slide">
-<h2>Entity를 뷰, 외부 레이어에는 감추기</h2>
+<div class="sect2">
+<h3 id="_외부_노출용_dto를_따로_만들기">외부 노출용 DTO를 따로 만들기</h3>
+<ul>
+<li class="">
+ENTITY &#8594; DTO 변환 로직은 컴파일 타임에 체크된다.
+</li>
+<li class="">
+DTO는 비교적 구조를 단순하게 가져갈 수 있다.
+<ul>
+<li class="">
+더 단순한 JSON 응답, JSP에서 쓰기 좋은 구조를 만들기에 유리하다.
+</li>
+</ul>
+</li>
+<li class="">
+DTO의 변화는 외부 인터페이스로 의식해서 관리하는 범위가 된다.
+<ul>
+<li class="">
+예: Swagger 스펙 활용
+</li>
+</ul>
+</li>
+<li class="">
+여러 ENTITY를 조합할수 있는 여지가 생긴다.
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_dto의_이름_고민">DTO의 이름 고민</h3>
 <ul>
 <li class=" slide">
 역할별로 구분된 DTO 정의 예
@@ -2669,9 +2885,13 @@ VALUE OBJECT : 실별성 없이 값만으로 동일성 판단
 <li class="">
 이슈 생성 JSON 요청 : IssueCreationRequest, IssueCreationCommand
 </li>
+<li class="">
+이슈 조회 조건 : IssueQuery, IssueCriteria
+</li>
 </ul>
 </li>
 </ul>
+</div>
 </section>
 <section class="slide">
 <h2>AGGREGATE로 ENTITY 간의 선긋기</h2>
@@ -2679,7 +2899,7 @@ VALUE OBJECT : 실별성 없이 값만으로 동일성 판단
 <h3 id="_aggregate는">AGGREGATE는?</h3>
 <ul>
 <li class=" slide">
-하나의 단위로써 취급되는 연관된 객체군
+하나의 단위로 취급되는 연관된 객체군 (ENTITY와 VALUE OBJECT의 묶음)
 <ul>
 <li class="">
 엄격한 데이터 일관성, 제약사항이 유지되어야 할 단위
@@ -2702,7 +2922,7 @@ Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 �
 </li>
 </ul>
 <div class="listingblock">
-<div class="title">AGGREGATE_ROOT로 저장 대상 타입을 표현해본 명시해본 CrudRepository</div>
+<div class="title">AGGREGATE_ROOT로 저장 대상 타입을 표현해본 CrudRepository</div>
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -2752,7 +2972,7 @@ CUD + 단순R(findById) 를 우선시 하여
 <h2>AGGREGATE 간의 참조</h2>
 <ul>
 <li class=" slide">
-다른 Aggregate의 Root를 직접 참조하지 않고 ID로만 참조하기
+다른 AGGREGATE의 Root를 직접 참조하지 않고 ID로만 참조하기
 </li>
 </ul>
 <div class="listingblock slide">
@@ -2777,7 +2997,11 @@ http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Issue</span>  <span style="color: #FF0000">{</span>
     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #009900">long</span> repoId<span style="color: #990000">;</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
-<p>참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋다.</p>
+<ul>
+<li class=" slide">
+참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋다.
+</li>
+</ul>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
@@ -2801,13 +3025,29 @@ http://www.gnu.org/software/src-highlite -->
     <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <ul>
-<li class="">
+<li class=" slide">
 <a href="https://github.com/spring-projects/spring-data-jdbc/blob/master/spring-data-jdbc/src/main/java/org/springframework/data/jdbc/core/mapping/AggregateReference.java">Spring Data JDBC의 AggregateReference</a> 도 같은 역할
 </li>
 </ul>
 </section>
 <section class="slide">
 <h2>여러 AGGREGATE에 걸친 조회</h2>
+<ul>
+<li class=" slide">
+Service 레이어에서 조합할 수 있다.
+</li>
+</ul>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>
+<span style="color: #008080">IssueEntity</span> issue <span style="color: #990000">=</span> issueRepository<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">findByCreatorId</span></span><span style="color: #990000">(</span>accountId<span style="color: #990000">);</span>
+
+MyProjectResponse <span style="color: #990000">=</span>
+
+</tt></pre></div></div>
 </section>
 <section class="slide">
 <h2>REPOSITORY vs DAO</h2>
@@ -2875,16 +3115,21 @@ OR-MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도�
 </section>
 <section class="slide">
 <h2>MyBatis</h2>
+<p>iBatis &#8594; MyBatsis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.</p>
 <ul>
 <li class="">
-First level cache, Lazy loading로 인한 부작용
+First level cache, Lazy loading 존재
 </li>
 <li class="">
-bulk data 처리에 유리한 batchUpdate 를 유도하기 위해서는 메서드 레벨로 분리호출하는 방식이 아닌, Framework 전체 설정을 고쳐야함 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
+JDBC 위의 추상화된 동작
+<ul>
+<li class="">
+batchUpdate 를 유도하기 위해서는 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
 </li>
 <li class="">
-쿼리가 실행되는 시점이 불투명함.
-lazy loading 때문에 그런 경우도 있고, executorType이 batch일때는 update, select가 섞여 있을때는 Select전에 update를 몰아서 날리기도 함.
+executorType이 batch일때는 UPDATE, UPDATE, SELECT 쿼리가 호출되면 UPDSTE 쿼리를 몰아서 날리기도 함.
+</li>
+</ul>
 </li>
 </ul>
 </section>
@@ -3078,6 +3323,8 @@ Effective Aggregate Design
 <script>
         (function($, deck, undefined) {
 
+$.deck.defaults.keys["previous"] = [8, 33, 37, 39];
+$.deck.defaults.keys["next"] = [13, 32, 34, 39];
 
                 $.extend(true, $[deck].defaults, {
                         countNested: false
