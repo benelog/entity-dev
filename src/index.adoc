@@ -534,18 +534,18 @@ Developer 1: I agree. I have found that lazy-loading in the command side means I
 
 public Issue findIssue(long issueId, long accountId)
     Issue issue = repository.findById(issueId); // 캐쉬된 객체를 변환
-    if(isMyIssue(checkMyIssue(issue, accountId)) {
+    if(isMyIssue(issue, accountId)) {
         // 추가 적인 처리
     }
     return issue;
 }
 
-boolean checkMyIssue(Issue issue, long accountId) {
+boolean isMyIssue(Issue issue, long accountId) {
     if (accountId == issue.getCreatedBy()) {
         issue.setMyIssue(true);
         // 캐쉬된 객체의 상태를 바꿔버림
         // 문제1: 메서드 이름과 어울리지 않아 예측이 어려움
-        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 값인데 Issue객체에 함께 있
+        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 속성인데 Issue객체에 함께 있
         return true;
     }
     return false;
