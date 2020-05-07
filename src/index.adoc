@@ -260,16 +260,18 @@ public class Account {
 
 === Value Object
 [incremental="true"]
-* 값이 같으면 동일하다고 간주되는 작은 객체 (예 : Money, Color )
+* 값이 같으면 동일하다고 간주되는, 식별성이 없는 작은 객체 (예 : Money, Color )
 ** https://martinfowler.com/bliki/ValueObject.html[마틴파울러의 정의], https://en.wikipedia.org/wiki/Value_object[위키페디아의 정의]
 ** https://openjdk.java.net/jeps/169[JEP 169 : Value Object]
 ** DDD에서도 이 정의를 따르고 있음.
 ** https://docs.jboss.org/hibernate/stable/core.old/reference/en/html/mapping-types.html[Hibernate 메뉴얼의 Value Type]도 Value Object를 포함한다고 생각됨.
-* 과도하게 넓은 의미로 쓰이고 있다. https://wiki.c2.com/?DataHolder[Data Holder]의 의미로
+* DTO와 혼용해서 쓰여 왔다.
 ** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0130648841[Core J2EE Pattern 1판(2001년)]에서는 TO(Transfer Object)를 VO라고 적었었음
 ** DTO와 동일한 의미라고 밝힌 서적도 있음.
-*** https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC[Professional Java EE Design Patterns(2014)]
-*** https://www.amazon.com/Architecting-Modern-Java-Applications-business-oriented/dp/1788393856/[Architecting Modern Java EE Applications(2017)]
+*** https://www.amazon.com/Expert-One-One-Development-without/dp/0764558315[Expert One-to-One J2EE Development(로드존슨, 2004)] : (265페이지) 'Value objects are sometimes referred to as Data Transfer Object(DTOs)'
+*** https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC[Professional Java EE Design Patterns(2014)] : (12장) 'The DTO is also referred to as the Value Object'
+*** https://www.amazon.com/Java-Architects-Handbook-Second-applications/dp/0972954880[The Java EE Architect's Handbook, Second Edition(2014)] : (5장) 'My definition of "value object" is very close to a Data Transfer Object (DTO)'
+* https://wiki.c2.com/?DataHolder[Data Holder]의 의미로 폭넓게 생각하는 경향도 있음.
 
 === DTO (Data Transfer Object)
 
@@ -300,7 +302,7 @@ List<UserDTO> dtos = query.list(
 * 사전적 의미 : 실체. https://dictionary.cambridge.org/ko/%EC%82%AC%EC%A0%84/%EC%98%81%EC%96%B4/entity[Something that exists apart from other things, having its own independent existence]
 * JPA의 `@Entity` 로 익숙한 개념 : DB 테이블과 대응되는 객체
 
-== DDD의 용어
+=== DDD의 용어
 (DDD 책에서 처럼 대문자료 표기)
 
 [incremental="true"]
@@ -333,6 +335,8 @@ List<UserDTO> dtos = query.list(
 ** 이슈 조회 JSON 응답 : IssueResponse, IssueDto, IssueDetailDto
 ** 이슈 생성 JSON 요청 : IssueCreationRequest, IssueCreationCommand
 ** 이슈 조회 조건 : IssueQuery, IssueCriteria
+** 이슈 DB 통계 조회 결과 : IssueStatRow
+** 이슈 + 코멘트 복합 조회 결과 : IssueCommentRow
 
 == AGGREGATE로 ENTITY 간의 선긋기
 
@@ -499,11 +503,12 @@ WHERE a.email = :email
 
 == Lazy loading 다시 생각하기
 [incremental="true"]
-* Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 꼭 필요할까 생각해볼수 있다.
+* Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
+* 반대로 Lazy loading이 있어서 깊은 객체 그래프의 Aggreate를 설계하고자하는 유혹에 빠질수도 있다.
 * Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 
 [quote]
-.https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Jouney의 Chapter 3] 중에서
+.https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Journey의 Chapter 3] 중에서
 ----
 Developer 2: To be clear, the aggregate boundary is here to group things that should change together for reasons of consistency. A lazy load would indicate that things that have been grouped together don't really need this grouping.
 
@@ -556,6 +561,15 @@ boolean checkMyIssue(Issue issue, long accountId) {
 * Immutable이 아니게 될 수 있다.
 * 영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야한다.
 ** 메서드명도 그 행위를 잘 드러내어야한다. ( `setTitle()` -> `changeTitle()` )
+
+== 끊나지 않는 고민
+[incremental="true"]
+* 비슷한 속성을 가진 클래스가 너무 많이 생기는 건 아닐까?
+** 예) 이슈의 제목과 관련된 속성을 담은 클래스
+*** IssueCreationCommand, IssueCriteria, IssueDetailResponse, IssueCreatedEvent
+*** IssueCreationCommand, IssueModificationCommand를 따로 만들어야하나? (id등 차이가 나는건 1개로 동일한 건 10개일때)
+** 이름 짓기가 어렵다
+* 객체 간의 매핑 로직에서의 실수
 
 = 퍼시스턴스 프레임워크
 
@@ -658,15 +672,62 @@ class AccountSqls {
 ** Entity의 상태가 변한다는 것-> DB에도 Update된다는 의미
 * 성숙한 사용자는 이미 2가지 프로그래밍 모델을 섞어서 쓰고 있을 가능성이 높음
 ** CUD, 단순R : Entity, Repository, 쿼리 자동 생성
-** 복잡한 R : 응답전용 DTO,  + QueryDSL
+** 복잡한 R : 응답전용 DTO,  + QueryDSL 등으로 개념적인 쿼리는 직접 작성
 
 == MyBatis
-* iBatis -> MyBatsis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
-* First level cache, Lazy loading 존재
-* JDBC 위의 추상화된 동작
-** batchUpdate 를 유도하기 위해서는 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
-** executorType이 batch일때는 UPDATE, UPDATE, SELECT 쿼리가 호출되면 UPDSTE 쿼리를 몰아서 날리기도 함.
-* ORM적인 특성도 있지만, 쿼리 자동생성기능은 없음
+[incremental="true"]
+* Spring JDBC와 JPA의 중간 정도의 추상화
+** iBatis -> MyBatis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
+* ORM적인 특성
+** First level cache, Lazy loading
+** 1대 다 매핑, N+1 쿼리 가능성 등
+** JDBC API보다 추상화된 동작
+*** batchUpdate 를 유도하기 위해서는 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
+*** executorType이 batch일때는 UPDATE, UPDATE, SELECT 순서로 쿼리가 호출되면 UPDATE 쿼리를 몰아서 날리기도 함.
+* XML로 쿼리관리를 할 수 있다는 점이 지금 시점에서 장점이 아님.
+
+=== 최대 약점
+[incremental="true"]
+* 쿼리 결과 -> Entity 매핑 때 Entity 속성명을 Type safe하게 지정할 수 있는 방법이 없음
+** RowMapper같은 확장 인터페이스가 메뉴얼에는 없음.
+
+[source,xml]
+.XML 방식의 쿼리 결과 매핑
+----
+<resultMap id="projectResultMap" type="example.Product">
+	<result property="id" column="id" />
+	<result property="name" column="name"/>
+	<result property="price" column="price"/>
+	<result property="description" column="desc"/>
+	<association property="seller" javaType="example.Seller">
+		<constructor>
+			<idArg column="seller_id" javaType="int"/>
+			<arg column="seller_name" javaType="String"/>
+		</constructor>
+	</association>
+</resultMap>
+----
+
+[source,java]
+.애너테이션 방식의 쿼리 결과 매핑
+----
+@Select(ProductSql.SELECT_PRODUCT)
+@Results(value = {
+    @Result(property="id", column="id"),
+    @Result(property="name", column="name"),
+    @Result(property="price", column="price")
+    @Result(property="seller.id", column="seller_id")
+    @Result(property="seller.name", column="seller_name")
+})
+----
+
+[incremental="true"]
+* https://github.com/abel533/Mapper/wiki/2.2-mapping[Mapper]라는 오픈소스를 이용하면 `@Table` , `@Id`, `@Column` 와 같은 애너테이션으로 쿼리 결과 매핑이 가능한듯함.
+
+=== 다른 Framework에서도 활용할만한 요소
+
+* https://mybatis.org/mybatis-3/statement-builders.html[SQL Builder]
+* https://mybatis.org/mybatis-dynamic-sql/docs/spring.html[Spring NamedParameterJdbcTemplate + MyBatis Dynamic SQL]
 
 == 대안 Framework
 
