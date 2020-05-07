@@ -146,15 +146,15 @@ public class Application extends WebMvcConfigurerAdapter {
 === 뷰 레이어의 분리
 
 [incremental="true"]
-* `java.util.Map` 의 한계
+*  `java.util.Map`가 여러 레이어를 거쳐갈 때의 한계
 ** Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 있는지 확인하기 어렵다.
 ** 실수, 고치기 어려움 -> 더 이상 초고속이 아니다.
-* 속성값을 담을 클래스가 필요하다
+* 속성이 선언된 클래스가 필요하다
 
 == 만능 클래스 (1)
 
 [incremental="true"]
-DB 컬럼, 응답,요청에 필요한 모든 속성을 하나의 클래스에 정의
+DB 컬럼, 응답,요청에 필요한 모든 속성이 하나의 클래스에 있는 경우
 
 [incremental="true"]
 [source,java]
@@ -192,7 +192,7 @@ public class Issue {
 ----
 
 == 만능 클래스 (2)
-연관된 모든 테이블의 데이터를 담은 클래스
+연관된 모든 테이블의 데이터를 담은 클래스가 주는 어려움
 
 [source,java]
 ----
@@ -262,7 +262,30 @@ public class Account {
 ** getter/setter는 많은 프레임워크에서 활용되고 있고는 있음.
 ** 그 역할을 하는 객체가 Setter가 꼭 있어야하는 것은 아니다.
 
-== VO vs DTO
+== DTO, VO
+
+=== DTO (Data Transfer Object)
+
+[incremental="true"]
+* 원격호출을 효율화하기 위해 나온 패턴
+** https://martinfowler.com/eaaCatalog/dataTransferObject.html[마틴 파울러의 페이지]에서 용어의 역사까지 설명
+** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464[Core J2EE Pattern 2판(2003년)]에서는 TO로 이름 붙임.
+* 네트워크 전송 시의 Data holder 역할로 요즘은 쓰이는 느낌
+** https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5[MSDN의 DTO(데이터 전송 개체) 만들기]에서는 '네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체'
+** https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_05_PaymentsBC.markdown[CQRS journey 5장] : 수정할 속성을 담는 객체도 DTO로 정의
+* 해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
+** '레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수 있음.
+*** 원격 호출 레이어에 국한 되지 않게 쓰는 경우도 넓게 보면 이 용어로 이해할만 하다.
+** 다만 다양한 객체의 역할을 다 DTO로 이름 붙이는 건 혼란도 있음.
+*** 예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
+*** 예) QueryDSL에서 DB조회 결과를 담을 객체
+
+[source,java]
+.http://www.querydsl.com/static/querydsl/3.4.2/reference/html/ch03s02.html[QueryDSL 메뉴얼]에 있는 DTO 관련 예제
+----
+List<UserDTO> dtos = query.list(
+    Projections.fields(UserDTO.class, user.firstName, user.lastName));
+----
 
 === Value Object
 [incremental="true"]
@@ -278,28 +301,6 @@ public class Account {
 *** https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC[Professional Java EE Design Patterns(2014)] : (12장) 'The DTO is also referred to as the Value Object'
 *** https://www.amazon.com/Java-Architects-Handbook-Second-applications/dp/0972954880[The Java EE Architect's Handbook, Second Edition(2014)] : (5장) 'My definition of "value object" is very close to a Data Transfer Object (DTO)'
 * https://wiki.c2.com/?DataHolder[Data Holder]의 의미로 폭넓게 생각하는 경향도 있음.
-
-=== DTO (Data Transfer Object)
-
-[incremental="true"]
-* 원격호출을 효율화하기 위해 나온 패턴
-** https://martinfowler.com/eaaCatalog/dataTransferObject.html[마틴 파울러의 페이지]에서 용어의 역사까지 설명
-** https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464[Core J2EE Pattern 2판(2003년)]에서는 TO로 이름 붙임.
-* 네트워크 전송 시의 Data holder 역할로 요즘은 폭넓게 쓰이는 느낌
-** https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5[MSDN의 DTO(데이터 전송 개체) 만들기]에서는 '네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체'
-** https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_05_PaymentsBC.markdown[CQRS journey 5장] : 수정할 속성을 담는 객체도 DTO로 정의
-* 해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
-** '레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수 있음.
-** 다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
-*** 예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
-*** 예) QueryDSL에서 DB조회 결과를 담을 객체
-
-[source,java]
-.http://www.querydsl.com/static/querydsl/3.4.2/reference/html/ch03s02.html[QueryDSL 메뉴얼]에 있는 DTO 관련 예제
-----
-List<UserDTO> dtos = query.list(
-    Projections.fields(UserDTO.class, user.firstName, user.lastName));
-----
 
 == Entity와 Value Object의 구분
 
@@ -322,7 +323,7 @@ List<UserDTO> dtos = query.list(
 [incremental="true"]
 * 캡슐화를 지키기 어려워진다.
 ** 꼭 필요하지 않는 속성도 외부로 노출되어 향후 수정하기 어려워진다.
-* JSP, Freemarker에서의 객체 참조
+* JSP, Freemarker에서의 ENTITY 참조
 ** 컴파일 시점의 검사 범위가 좁다 -> ENTITY 클래스를 수정했을때 뷰에서 에러가 나는 경우가 뒤늦게 발견된다.
 ** JPA를 쓴다면 `OpenEntityManagerInViewFilter` 를 고려해야한다.
 *** 초보 개발자는 쿼리가 실행되는 시점을 예상하지 못한다.
@@ -345,7 +346,7 @@ List<UserDTO> dtos = query.list(
 ** 이슈 조회 JSON 응답 : IssueResponse, IssueDto, IssueDetailDto
 ** 이슈 생성 JSON 요청 : IssueCreationRequest, IssueCreationCommand
 ** 이슈 조회 조건 : IssueQuery, IssueCriteria
-** 이슈 DB 통계 조회 결과 : IssueStatRow
+** 이슈 DB 통계 조회 결과 : IssueStatsRow
 ** 이슈 + 코멘트 복합 조회 결과 : IssueCommentRow
 
 == AGGREGATE로 ENTITY 간의 선긋기
@@ -360,7 +361,7 @@ List<UserDTO> dtos = query.list(
 ** 불변식(Invariants, 데이터가 변경될 때마다 유지돼야 하는 규칙)이 적용되는 단위
 ** Document DB와 어울림
 * AGGREGATE 1개당 REPOSITORY 1개
-** AGGREGATE ROOT를 통해서 AGGREGATE 밖에서 AGGEGATE 안의 객체로 접근함.
+** AGGREGATE ROOT를 통해서 밖에서 AGGEGATE 안의 객체로 접근함.
 * Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋다
 
 [source,java]
@@ -423,7 +424,6 @@ public class Issue  {
 
 [source,java]
 ----
-
 public class Issue  {
     private Association<Repo> repoId;
 }
@@ -439,6 +439,7 @@ public class Association<T>  {
     public Association(long id) {
         this.id = id;
     }
+    ...
 }
 ----
 
@@ -464,21 +465,21 @@ var miletoneReponse  = MilestoneResponse.builder()
 
 [incremental="true"]
 * DB 성능에 더 유리할 수 있다.
-** 각각의 쿼리가 단순해 진다.
-* Application/DB 레벨의 캐쉬에 더 유리하다.
+** 각각의 쿼리가 단순하다.
+** Application/DB 레벨의 캐쉬에 더 유리하다.
 
 === JOIN이 필수적인 경우
 [source,sql]
 .WHERE절에 다른 AGGRAGATE의 속성이 필요한 경우
 ----
-SELECT r.name, r.description, r,created_by, r.created_at
+SELECT r.name, r.description, r.created_by, r.created_at
 FROM repo r
     INNER JOIN account a ON a.id = r.created_by
 WHERE a.email = :email
 ----
 
 [incremental="true"]
-* Repository에 조회조건 정도를 추가하고 Service단에서 다시 조합할 수도 있다.
+* Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있다.
 ** `List<Repo> findByCreatorEmail(String email)`
 
 [source,sql]
@@ -491,7 +492,7 @@ WHERE a.email = :email
 ----
 
 [incremental="true"]
-* 맞춤형 전용 DTO를 만들 수 있다.
+* 전용 DTO를 만들 수 있다.
 * 클래스가 늘어나지만 장점도 있다.
 ** Aggregate를 단순하게 유지할 수 있다.
 ** JPA의 경우 : Persistent Context를 의식하지 않아도 된다.
@@ -513,8 +514,8 @@ WHERE a.email = :email
 
 == Lazy loading 다시 생각하기
 [incremental="true"]
-* Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
-* 반대로 Lazy loading이 있어서 깊은 객체 그래프의 Aggreate를 설계하고자하는 유혹에 빠질수도 있다.
+* AGGREGATE를 정리하고 복합조회용 객체를 따로 정의하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
+* 반대로 Lazy loading이 있어서 깊은 객체 그래프의 ENTITY를 설계하는 유혹에 빠질 수도 있다.
 * Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 
 [quote]
@@ -542,8 +543,9 @@ public Issue findIssue(long issueId, long accountId)
 boolean checkMyIssue(Issue issue, long accountId) {
     if (accountId == issue.getCreatedBy()) {
         issue.setMyIssue(true);
-        // 예상지 않게 상태를 바꾸고 있음.
-        // 특정 사용자에게 한정된 뷰의 값인데 캐쉬된 객체의 상태를 바꿔버림
+        // 캐쉬된 객체의 상태를 바꿔버림
+        // 문제1: 메서드 이름과 어울리지 않아 예측이 어렵다.
+        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 값인데 Issue객체에 함께 있다.
         return true;
     }
     return false;
@@ -565,7 +567,7 @@ boolean checkMyIssue(Issue issue, long accountId) {
 ** 데이터 중심 -> 책임 중심의 설계로 진화할 수 있다.
 * 상태를 바꾸는 메서드가 포함될 수도 있다.
 ** 상태를 바꿀 때의 정합성 검사를 포함
-** 예) Domain Event 추가. https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html[Springg Data의 AbstractAggregateRoot]
+** 예) Domain Event 추가. https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html[Springg Data의 AbstractAggregateRoot]에 있는 메서드 참고
 * Immutable이 아니게 될 수 있다.
 * 영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야한다.
 ** 메서드명도 그 행위를 잘 드러내어야한다. ( `setTitle()` -> `changeTitle()` )
@@ -587,7 +589,7 @@ boolean checkMyIssue(Issue issue, long accountId) {
 * '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴롭다.
 ** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크의 마법이 필수적이지 않다.
 * 프레임워크의 특정 기능을 위해서 추구하는 객체 설계를 포기하는 상황이 적을수록 좋다.
-** 예: Spring JDBC의 `BeanPropertyRowMapper` 를 쓰러면 setter가 필수
+** 예: Spring JDBC의 `BeanPropertyRowMapper` 를 쓰려면 setter가 필수. Cache 되었을때 부작용을 막기 위해 Immutable하게 만들고 싶어도 할 수 없다.
 
 == SQL관리 방안
 
@@ -783,11 +785,13 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 image:img/complex-search.png[complex-search.png, title="복잡한 조회 화면]
 
 [incremental="true"]
-* 복잡한 쿼리를 담당하는 API서버 분리 개발
+* 기존 시스템을 점진적으로 분리하는 프로젝트
+** 복잡한 쿼리를 담당하는 API서버부터 새로 개발
 * AGGREAGATE 경계를 넘어서는 복잡한 조회
 ** REPOSITORY가 아닌 DAO 개념으로 접근
 * Native SQL 중심 개발
-** 쿼리 힌트, 최적화를 위해 복잡한 형태의 쿼리가 많이 들어감
+** 쿼리 힌트를 조회/정렬 조건에 따라 다르게 넣어야했음.
+** 최적화를 위해 복잡한 형태의 쿼리가 많이 들어감
 * Spring JDBC + Spring Data JDBC의 일부 기능 사용
 ** JPA Dialect가 없는 자체 분산 DB(NBase-T) 사용
 ** JPA를 쓸 수 있다고해도 적용의 이득이 없는 상황
@@ -802,8 +806,8 @@ image:img/architecure-case.png[architecure-case.png, title="복잡한 조회를 
 ** AGGREGATE 단위로 ENTITY간의 경계 의식하기 (ID만 참조)
 ** 복합적인 READ 결과를 담을 클래스 분리
 * 프레임워크는 설계를 거드는 역할이 되어야
-** 프레임워크에서 주는 제약이 설계에 도움을 주기도한다.
 ** 편의성을 주는 기능이 설계를 해치는지 경계해야 한다.
+** 프레임워크에서 주는 제약이 설계에 도움을 주기도한다.
 * 때로는 다른 가치를 위해 더 긴 코드를 만들 수도 있다.
 ** 고치기 쉬운 , 협업하기 쉬운, 확장하기 쉬운 코드
 
@@ -811,13 +815,14 @@ image:img/architecure-case.png[architecure-case.png, title="복잡한 조회를 
 [incremental="true"]
 * AGGREGATE
 * '객체지향 설계는 (J2EE나 심지어 자바 같은) 특정 구현 기술보다 더 중요하다.' (로드 존슨)
-** ENTITY 설계는 (JPA나 Spring JDBC 같은) 특정 구현 기술보다 더 중요하다.
+** (응용) ENTITY 설계는 (JPA나 Spring JDBC 같은) 특정 구현 기술보다 더 중요하다.
 
 == 참고 & 추천 자료
 
 * https://www.popit.kr/%EC%97%90%EA%B7%B8%EB%A6%AC%EA%B2%8C%EC%9E%87-%ED%95%98%EB%82%98%EC%97%90-%EB%A6%AC%ED%8C%8C%EC%A7%80%ED%86%A0%EB%A6%AC-%ED%95%98%EB%82%98/[애그리게잇 하나에 리파지토리 하나]
 * https://spring.io/blog/2018/09/24/spring-data-jdbc-references-and-aggregates[Spring Data JDBC, References, and Aggregates]
 * https://www.slideshare.net/SpringCentral/domaindriven-design-with-relational-databases-using-spring-data-jdbc[Domain-Driven Design with Relational Databases Using Spring Data JDBC] (SpringOne Platform 2019의 발표)
+* https://www.slideshare.net/baejjae93/ss-151545329[우아한 객체지향] (우아한 테크 세미나 2019.06.20)
 ** https://youtu.be/GOSW911Ox6s[발표 영상]
 ** 99쪽 : 어떤 객체를 묶고 어떤 객체들을 분리할 것인가?
 ** 103쪽 : 경계 밖의 객체는 ID를 이용해 접근
@@ -829,4 +834,3 @@ image:img/architecure-case.png[architecure-case.png, title="복잡한 조회를 
 ** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf[Part I: Modeling a Single Aggregate]
 ** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf[Part II: Making Aggregates Work Together]
 ** https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_3.pdf[Part III: Gaining Insight Through Discovery]
-* https://www.slideshare.net/baejjae93/ss-151545329[우아한 객체지향] (우아한 테크 세미나 2019.06.20)
