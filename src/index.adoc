@@ -28,6 +28,7 @@
 === 발표 주제
 [incremental="true"]
 * 이 고민을 풀어가는 과정에서 경험, 글, 주변 동료로부터 배운 것들
+* https://github.com/benelog/entity-dev/blob/master/src/index.adoc[발표 내용의 한 페이지 뷰]
 
 = 난관의 여정
 
