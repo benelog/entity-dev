@@ -6,7 +6,7 @@
         <title>엔티티 클래스 설계와 퍼시스턴스 프레임워크</title>
         <meta name="viewport" content="width=1024, user-scalable=no">
         <meta name="author" content="정상혁" />
-        <meta name="generator" content="AsciiDoc 9.0.0rc1" />
+        <meta name="generator" content="AsciiDoc 8.6.10" />
         <meta name="presdate" content="2020-05-07" />
         
         <!-- Core and extension CSS files -->
@@ -2787,7 +2787,7 @@ DTO와 동일한 의미라고 밝힌 서적도 있음.
 해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
 <ul>
 <li class="">
-'레이어 간의 경계를 넘어서 데이터를 전달&#8217;하는 역할은 과거와 동일하다고 생각할 수 있음.
+'레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수 있음.
 </li>
 <li class="">
 다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
@@ -3678,10 +3678,10 @@ CUD + 단순 R : JPA
 복합적인 R
 <ul>
 <li class="">
-JPA를 써도 분리된 패턴으로 구현하고 있을 것임
+JPA를 써도 쿼리작성/최적화 의식을 하면서 구현하고 있을 것임
 </li>
 <li class="">
-Spring JDBC로도 쓸만함 : 단순한 쿼리 실행기, 확장 가능
+Native SQL 위주라면 Spring JDBC로도 쓸만함 : 단순한 쿼리 실행기, 확장 가능.
 </li>
 </ul>
 </li>
@@ -3691,7 +3691,7 @@ Spring JDBC로도 쓸만함 : 단순한 쿼리 실행기, 확장 가능
 하나의 프레임워크로 통일한다면 Spring Data JDBC도 고려해볼만함
 <ul>
 <li class="">
-Entity 단위의 접근이 어려운 부분은 Spring JDBC처럼 사용하면 됨.
+Aggregate/Entity 단위로 접근이 어려운 부분은 <code>NamedParameterJdbcTemplate</code> 을 직접 사용하면 됨.
 </li>
 </ul>
 </li>
@@ -3700,7 +3700,7 @@ Entity 단위의 접근이 어려운 부분은 Spring JDBC처럼 사용하면 �
 <h3 id="_아키텍처_전락">아키텍처 전락</h3>
 <ul>
 <li class=" slide">
-AGGREGATE가 단위로 정리하기 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만함.
+AGGREGATE별 분리가 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만함.
 </li>
 </ul>
 </div>
@@ -3749,7 +3749,7 @@ JPA를 쓸 수 있다고해도 적용의 이득이 없는 상황
 </section>
 <h1 id="_정리">정리</h1>
 <section class="slide">
-<h2>요약</h2>
+<h2>요약 &amp; 결론</h2>
 <ul>
 <li class=" slide">
 선을 넘지 않는 ENTITY
@@ -3761,18 +3761,18 @@ JPA를 쓸 수 있다고해도 적용의 이득이 없는 상황
 AGGREGATE 단위로 ENTITY간의 경계 의식하기 (ID만 참조)
 </li>
 <li class="">
-복합적인 R을 담을 클래스 분리
+복합적인 READ 결과를 담을 클래스 분리
 </li>
 </ul>
 </li>
 <li class=" slide">
-프레임워크는 설계를 거들 뿐
+프레임워크는 설계를 거드는 역할이 되어야
 <ul>
 <li class="">
 프레임워크에서 주는 제약이 설계에 도움을 주기도한다.
 </li>
 <li class="">
-편의성을 주는 기능이 설계를 해치기도 한다.
+편의성을 주는 기능이 설계를 해치는지 경계해야 한다.
 </li>
 </ul>
 </li>
@@ -3790,7 +3790,7 @@ AGGREGATE 단위로 ENTITY간의 경계 의식하기 (ID만 참조)
 <h2>키워드</h2>
 <ul>
 <li class=" slide">
-AGGREGATE ROOT
+AGGREGATE
 </li>
 <li class=" slide">
 <em>객체지향 설계는 (J2EE나 심지어 자바 같은) 특정 구현 기술보다 더 중요하다.</em> (로드 존슨)
