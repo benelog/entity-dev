@@ -361,8 +361,8 @@ List<UserDTO> dtos = query.list(
 ** 불변식(Invariants, 데이터가 변경될 때마다 유지돼야 하는 규칙)이 적용되는 단위
 ** Document DB와 어울림
 * AGGREGATE 1개당 REPOSITORY 1개
-** AGGREGATE ROOT를 통해서 밖에서 AGGEGATE 안의 객체로 접근함.
-* Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋다
+** AGGREGATE ROOT를 통해서 밖에서 AGGEGATE 안의 객체로 접근함
+* Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋엄
 
 [source,java]
 .AGGREGATE_ROOT로 저장 대상 타입을 표현해본 CrudRepository
@@ -373,20 +373,20 @@ public interface CrudRepository<AGGREGATE_ROOT, ID> extends Repository<AGGREGATE
 }
 ----
 
-===  AGGREGATE 경계가 있는 시스템
+===  AGGREGATE간의 경계가 있는 시스템
 
 [incremental="true"]
 * 별도의 저장소나 API 서버를 분리할 때 상대적으로 유리
-** AGGREGATE 밖은 eventual consistancy를 목표로 할 수도 있다.
-** 여러 AGGREGATE의 변경은 Event, SAGA, TCC 등의 패턴을 활용할 수도 있다.
-* AGGREGATE별로 Cache를 적용하기에도 좋다
-* 분리할 계획이 없더라도 코드를 고칠 때 영향성을 파악하기가 유리하다.
+** AGGREGATE 밖은 eventual consistancy를 목표로 할 수도 있음
+** 여러 AGGREGATE의 변경은 Event, SAGA, TCC 등의 패턴을 활용할 수도 있음
+* AGGREGATE별로 Cache를 적용하기에도 좋음
+* 분리할 계획이 없더라도 코드를 고칠 때 영향성을 파악하기가 유리
 
 === AGGREGATE 식별시 의식할 점
 
 [incremental="true"]
 * CUD + 단순R(findById)에 집중
-** 모든 R을 다 포용하려고 한다면 깊은 객체 그래프가 나온다.
+** 모든 R을 다 포용하려고 한다면 깊은 객체 그래프가 나옴
 * (JPA를 쓴다면) Cascade를 써도 되는 범위인가?
 
 == AGGREGATE 간의 참조
@@ -420,7 +420,7 @@ public class Issue  {
 ----
 
 [incremental="true"]
-* 참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋다.
+* 참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋
 
 [source,java]
 ----
@@ -464,9 +464,9 @@ var miletoneReponse  = MilestoneResponse.builder()
 ----
 
 [incremental="true"]
-* DB 성능에 더 유리할 수 있다.
-** 각각의 쿼리가 단순하다.
-** Application/DB 레벨의 캐쉬에 더 유리하다.
+* DB 성능에 더 유리할 수 있음
+** 각각의 쿼리가 단순해짐
+** Application/DB 레벨의 캐쉬에 더 유리함
 
 === JOIN이 필수적인 경우
 [source,sql]
@@ -479,7 +479,7 @@ WHERE a.email = :email
 ----
 
 [incremental="true"]
-* Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있다.
+* Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있
 ** `List<Repo> findByCreatorEmail(String email)`
 
 [source,sql]
@@ -493,10 +493,10 @@ WHERE a.email = :email
 
 [incremental="true"]
 * 전용 DTO를 만들 수 있다.
-* 클래스가 늘어나지만 장점도 있다.
-** Aggregate를 단순하게 유지할 수 있다.
-** JPA의 경우 : Persistent Context를 의식하지 않아도 된다.
-* 이런 쿼리는 REPOSITORY보다는 DAO에 어울린다.
+* 클래스가 늘어나지만 장점도 있음
+** Aggregate를 단순하게 유지할 수 있음
+** JPA의 경우 : Persistent Context를 의식하지 않아도 됨
+* 이런 쿼리는 REPOSITORY보다는 DAO에 어울ㄻ
 
 == REPOSITORY vs DAO
 
@@ -514,9 +514,9 @@ WHERE a.email = :email
 
 == Lazy loading 다시 생각하기
 [incremental="true"]
-* AGGREGATE를 정리하고 복합조회용 객체를 따로 정의하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
-* 반대로 Lazy loading이 있어서 깊은 객체 그래프의 ENTITY를 설계하는 유혹에 빠질 수도 있다.
-* Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
+* AGGREGATE를 정리하고 복합조회용 객체를 따로 정의하면 Lazy loading이 필수일지 한번 더 생각해볼 수 있음
+* 반대로 Lazy loading이 있어서 깊은 객체 그래프의 ENTITY를 설계하는 유혹에 빠질 수도 있음
+* Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있음
 
 [quote]
 .https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown[CQRS Journey의 Chapter 3] 중에서
@@ -544,8 +544,8 @@ boolean checkMyIssue(Issue issue, long accountId) {
     if (accountId == issue.getCreatedBy()) {
         issue.setMyIssue(true);
         // 캐쉬된 객체의 상태를 바꿔버림
-        // 문제1: 메서드 이름과 어울리지 않아 예측이 어렵다.
-        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 값인데 Issue객체에 함께 있다.
+        // 문제1: 메서드 이름과 어울리지 않아 예측이 어려움
+        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 값인데 Issue객체에 함께 있
         return true;
     }
     return false;
@@ -556,8 +556,8 @@ boolean checkMyIssue(Issue issue, long accountId) {
 
 [incremental="true"]
 * Cache 하기에 안전하다.
-* 다른 레이어에 메서드 파라미터로 보내도 값이 안 바뀌었다는 확신을 할 수 있다.
-* DTO류가 여러 레이어를 오간다면 Immutable하면 더 좋다.
+* 다른 레이어에 메서드 파라미터로 보내도 값이 안 바뀌었다는 확신을 할 수 있음
+* DTO류가 여러 레이어를 오간다면 Immutable하면 더 좋
 
 ===  Rich Domain Object
 
@@ -568,8 +568,8 @@ boolean checkMyIssue(Issue issue, long accountId) {
 * 상태를 바꾸는 메서드가 포함될 수도 있다.
 ** 상태를 바꿀 때의 정합성 검사를 포함
 ** 예) Domain Event 추가. https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html[Springg Data의 AbstractAggregateRoot]에 있는 메서드 참고
-* Immutable이 아니게 될 수 있다.
-* 영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야한다.
+* Immutable이 아니게 될 수 있음
+* 영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야 함
 ** 메서드명도 그 행위를 잘 드러내어야한다. ( `setTitle()` -> `changeTitle()` )
 
 == 끝나지 않는 고민
@@ -578,7 +578,7 @@ boolean checkMyIssue(Issue issue, long accountId) {
 ** 예) 이슈의 제목과 관련된 속성을 담은 클래스
 *** IssueCreationCommand, IssueCriteria, IssueDetailResponse, IssueCreatedEvent
 *** IssueCreationCommand, IssueModificationCommand를 따로 만들어야하나? (id등 차이가 나는건 1개로 동일한 건 10개일때)
-** 이름 짓기가 어렵다
+** 이름 짓기가 어려움
 * 객체 간의 매핑 로직에서의 실수
 
 = 퍼시스턴스 프레임워크
@@ -586,16 +586,16 @@ boolean checkMyIssue(Issue issue, long accountId) {
 == 프레임워크 돌아보기
 
 [incremental="true"]
-* '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴롭다.
-** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크의 마법이 필수적이지 않다.
-* 프레임워크의 특정 기능을 위해서 추구하는 객체 설계를 포기하는 상황이 적을수록 좋다.
-** 예: Spring JDBC의 `BeanPropertyRowMapper` 를 쓰려면 setter가 필수. Cache 되었을때 부작용을 막기 위해 Immutable하게 만들고 싶어도 할 수 없다.
+* '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴로움
+** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크의 마법이 필수적이지 않음
+* 프레임워크의 특정 기능을 위해서 추구하는 객체 설계를 포기하는 상황이 적을수록 좋음
+** 예: Spring JDBC의 `BeanPropertyRowMapper` 를 쓰려면 setter가 필수. Cache 되었을때 부작용을 막기 위해 Immutable하게 만들고 싶어도 할 수 없음
 
 == SQL관리 방안
 
 [incremental="true"]
-* XML을 벗어나면 컴파일 타임의 검사 영역이 늘어나서 생산성에 큰 도움이 된다.
-* Java/Kotlin/Groovy를 이용한 쿼리 관리 : JPA, MyBatis, Spring JDBC 모두에서 쓸 수 있다.
+* XML을 벗어나면 컴파일 타임의 검사 영역이 늘어나서 생산성에 큰 도움이 됨
+* Java/Kotlin/Groovy를 이용한 쿼리 관리 : JPA, MyBatis, Spring JDBC 모두에서 쓸 수 있음
 
 === JDK 13이상의 raw literal String
 
@@ -666,7 +666,7 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 [incremental="true"]
 * Groovy 대비 약점
 ** Java만 아는 사람에는 새로운 언어라는 거부감이 있을 수도 있음
-*** (반론) SQL관리 용도로 몇가지 문법만 쓰면 학습 비용이 높지 않음.
+*** (반론) SQL관리 용도로 몇가지 문법만 쓰면 학습 비용이 높지 않음
 ** Java와 섞어 쓸때 주의할 점
 *** Lombok과 같이 쓰면 컴파일 순서 등을 신경써야 함. ( https://d2.naver.com/helloworld/6685007[Kotlin 도입 과정에서 만난 문제와 해결 방법] )
 * Groovy 대비 강점
@@ -685,7 +685,7 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 
 == JPA
 [incremental="true"]
-* OR-MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해준다.
+* OR-MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해 줌
 ** Entity의 상태가 변한다는 것-> DB에도 Update된다는 의미
 * 성숙한 사용자는 이미 2가지 프로그래밍 모델을 섞어서 쓰고 있을 가능성이 높음
 ** CUD, 단순R : Entity, Repository, 쿼리 자동 생성
@@ -696,19 +696,19 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 == MyBatis
 [incremental="true"]
 * Spring JDBC와 JPA의 중간 정도의 추상화
-** iBatis -> MyBatis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
+** iBatis -> MyBatis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨
 * ORM적인 특성
 ** First level cache, Lazy loading
 ** 1대 다 매핑, N+1 쿼리 가능성 등
 ** JDBC API보다 추상화된 동작
 *** batchUpdate 를 유도하기 위해서는 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
 *** executorType이 batch일때는 UPDATE, UPDATE, SELECT 순서로 쿼리가 호출되면 UPDATE 쿼리를 몰아서 날리기도 함.
-* XML로 쿼리관리를 할 수 있다는 점이 지금 시점에서 장점이 아님.
+* XML로 쿼리관리를 할 수 있다는 점은 지금 시점에서 장점이 아님.
 
 === 최대 약점
 [incremental="true"]
 * 쿼리 결과 -> Entity 매핑 때 Entity 속성명을 Type safe하게 지정할 수 있는 방법이 없음
-** RowMapper같은 확장 인터페이스가 메뉴얼에는 없음.
+** RowMapper같은 확장 인터페이스가 메뉴얼에는 없음
 
 [source,xml]
 .XML 방식의 쿼리 결과 매핑
@@ -741,7 +741,8 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 ----
 
 [incremental="true"]
-* https://github.com/abel533/Mapper/wiki/2.2-mapping[Mapper]라는 오픈소스를 이용하면 `@Table` , `@Id`, `@Column` 와 같은 애너테이션으로 쿼리 결과 매핑이 가능한듯함.
+* https://github.com/abel533/Mapper/wiki/2.2-mapping[Mapper]라는 오픈소스를 이용하면 `@Table` , `@Id`, `@Column` 와 같은 애너테이션으로 쿼리 결과 매핑이 가능한 듯함.
+** 중국어로 메뉴얼이 적혀 있음.
 
 === 다른 Framework에서도 활용할만한 요소
 
@@ -764,13 +765,13 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 == 프레임워크 활용 전략
 
 [incremental="true"]
-* 프레임워크를 섞어서 사용
-** CUD + 단순 R : JPA
+* 적용 패턴에 따라 프레임워크를 다르게 사용
+** 예) CUD + 단순 R -> JPA, 복합적인 R -> Spring JDBC
 ** 복합적인 R
 *** JPA를 써도 쿼리작성/최적화 의식을 하면서 구현하고 있을 것임
 *** Native SQL 위주라면 Spring JDBC로도 쓸만함 : 단순한 쿼리 실행기, 확장 가능.
 * 하나의 프레임워크로 통일한다면 Spring Data JDBC도 고려해볼만함
-** Aggregate/Entity 단위로 접근이 어려운 부분은 `NamedParameterJdbcTemplate` 을 직접 사용하면 됨.
+** AGGREGATE/ENTITY 개념으로 다루기 어려운 부분은 `NamedParameterJdbcTemplate` 을 직접 사용하면 됨.
 
 === 아키텍처 전락
 
