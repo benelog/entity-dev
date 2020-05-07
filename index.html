@@ -6,7 +6,7 @@
         <title>엔티티 클래스 설계와 퍼시스턴스 프레임워크</title>
         <meta name="viewport" content="width=1024, user-scalable=no">
         <meta name="author" content="정상혁" />
-        <meta name="generator" content="AsciiDoc 8.6.10" />
+        <meta name="generator" content="AsciiDoc 9.0.0rc1" />
         <meta name="presdate" content="2020-05-07" />
         
         <!-- Core and extension CSS files -->
@@ -2518,7 +2518,7 @@ SQL, 로직의 중복
 <h3 id="_뷰_레이어의_분리">뷰 레이어의 분리</h3>
 <ul>
 <li class=" slide">
-<code>java.util.Map</code> 의 한계
+`java.util.Map`가 여러 레이어를 거쳐갈 때의 한계
 <ul>
 <li class="">
 Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 있는지 확인하기 어렵다.
@@ -2529,14 +2529,14 @@ Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 �
 </ul>
 </li>
 <li class=" slide">
-속성값을 담을 클래스가 필요하다
+속성이 선언된 클래스가 필요하다
 </li>
 </ul>
 </div>
 </section>
 <section class="slide">
 <h2>만능 클래스 (1)</h2>
-<p>DB 컬럼, 응답,요청에 필요한 모든 속성을 하나의 클래스에 정의</p>
+<p>DB 컬럼, 응답,요청에 필요한 모든 속성이 하나의 클래스에 있는 경우</p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
@@ -2576,7 +2576,7 @@ http://www.gnu.org/software/src-highlite -->
 </section>
 <section class="slide">
 <h2>만능 클래스 (2)</h2>
-<p>연관된 모든 테이블의 데이터를 담은 클래스</p>
+<p>연관된 모든 테이블의 데이터를 담은 클래스가 주는 어려움</p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
@@ -2713,7 +2713,66 @@ getter/setter는 많은 프레임워크에서 활용되고 있고는 있음.
 </ul>
 </section>
 <section class="slide">
-<h2>VO vs DTO</h2>
+<h2>DTO, VO</h2>
+<div class="sect2">
+<h3 id="_dto_data_transfer_object">DTO (Data Transfer Object)</h3>
+<ul>
+<li class=" slide">
+원격호출을 효율화하기 위해 나온 패턴
+<ul>
+<li class="">
+<a href="https://martinfowler.com/eaaCatalog/dataTransferObject.html">마틴 파울러의 페이지</a>에서 용어의 역사까지 설명
+</li>
+<li class="">
+<a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464">Core J2EE Pattern 2판(2003년)</a>에서는 TO로 이름 붙임.
+</li>
+</ul>
+</li>
+<li class=" slide">
+네트워크 전송 시의 Data holder 역할로 요즘은 쓰이는 느낌
+<ul>
+<li class="">
+<a href="https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5">MSDN의 DTO(데이터 전송 개체) 만들기</a>에서는 <em>네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체</em>
+</li>
+<li class="">
+<a href="https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_05_PaymentsBC.markdown">CQRS journey 5장</a> : 수정할 속성을 담는 객체도 DTO로 정의
+</li>
+</ul>
+</li>
+<li class=" slide">
+해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
+<ul>
+<li class="">
+'레이어 간의 경계를 넘어서 데이터를 전달&#8217;하는 역할은 과거와 동일하다고 생각할 수 있음.
+<ul>
+<li class="">
+원격 호출 레이어에 국한 되지 않게 쓰는 경우도 넓게 보면 이 용어로 이해할만 하다.
+</li>
+</ul>
+</li>
+<li class="">
+다만 다양한 객체의 역할을 다 DTO로 이름 붙이는 건 혼란도 있음.
+<ul>
+<li class="">
+예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
+</li>
+<li class="">
+예) QueryDSL에서 DB조회 결과를 담을 객체
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="title"><a href="http://www.querydsl.com/static/querydsl/3.4.2/reference/html/ch03s02.html">QueryDSL 메뉴얼</a>에 있는 DTO 관련 예제</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #008080">List&lt;UserDTO&gt;</span> dtos <span style="color: #990000">=</span> query<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">list</span></span><span style="color: #990000">(</span>
+    Projections<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">fields</span></span><span style="color: #990000">(</span>UserDTO<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">class</span></span><span style="color: #990000">,</span> user<span style="color: #990000">.</span>firstName<span style="color: #990000">,</span> user<span style="color: #990000">.</span>lastName<span style="color: #990000">));</span></tt></pre></div></div>
+</div>
 <div class="sect2">
 <h3 id="_value_object">Value Object</h3>
 <ul>
@@ -2761,60 +2820,6 @@ DTO와 동일한 의미라고 밝힌 서적도 있음.
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_dto_data_transfer_object">DTO (Data Transfer Object)</h3>
-<ul>
-<li class=" slide">
-원격호출을 효율화하기 위해 나온 패턴
-<ul>
-<li class="">
-<a href="https://martinfowler.com/eaaCatalog/dataTransferObject.html">마틴 파울러의 페이지</a>에서 용어의 역사까지 설명
-</li>
-<li class="">
-<a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464">Core J2EE Pattern 2판(2003년)</a>에서는 TO로 이름 붙임.
-</li>
-</ul>
-</li>
-<li class=" slide">
-네트워크 전송 시의 Data holder 역할로 요즘은 폭넓게 쓰이는 느낌
-<ul>
-<li class="">
-<a href="https://docs.microsoft.com/ko-kr/aspnet/web-api/overview/data/using-web-api-with-entity-framework/part-5">MSDN의 DTO(데이터 전송 개체) 만들기</a>에서는 <em>네트워크를 통해 데이터를 전송 하는 방법을 정의 하는 개체</em>
-</li>
-<li class="">
-<a href="https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_05_PaymentsBC.markdown">CQRS journey 5장</a> : 수정할 속성을 담는 객체도 DTO로 정의
-</li>
-</ul>
-</li>
-<li class=" slide">
-해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
-<ul>
-<li class="">
-'레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수 있음.
-</li>
-<li class="">
-다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
-<ul>
-<li class="">
-예) HTTP 요청으로 오는 파라미터를 담을 객체, 통계 쿼리의 결과를 담을 객체
-</li>
-<li class="">
-예) QueryDSL에서 DB조회 결과를 담을 객체
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<div class="listingblock">
-<div class="title"><a href="http://www.querydsl.com/static/querydsl/3.4.2/reference/html/ch03s02.html">QueryDSL 메뉴얼</a>에 있는 DTO 관련 예제</div>
-<div class="content"><!-- Generator: GNU source-highlight
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #008080">List&lt;UserDTO&gt;</span> dtos <span style="color: #990000">=</span> query<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">list</span></span><span style="color: #990000">(</span>
-    Projections<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">fields</span></span><span style="color: #990000">(</span>UserDTO<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">class</span></span><span style="color: #990000">,</span> user<span style="color: #990000">.</span>firstName<span style="color: #990000">,</span> user<span style="color: #990000">.</span>lastName<span style="color: #990000">));</span></tt></pre></div></div>
-</div>
 </section>
 <section class="slide">
 <h2>Entity와 Value Object의 구분</h2>
@@ -2856,7 +2861,7 @@ VALUE OBJECT : 식별성 없이 속성만으로 동일성을 판단하는 객체
 </ul>
 </li>
 <li class=" slide">
-JSP, Freemarker에서의 객체 참조
+JSP, Freemarker에서의 ENTITY 참조
 <ul>
 <li class="">
 컴파일 시점의 검사 범위가 좁다 &#8594; ENTITY 클래스를 수정했을때 뷰에서 에러가 나는 경우가 뒤늦게 발견된다.
@@ -2924,7 +2929,7 @@ DTO의 변화는 외부 인터페이스로 의식해서 관리하는 범위가 �
 이슈 조회 조건 : IssueQuery, IssueCriteria
 </li>
 <li class="">
-이슈 DB 통계 조회 결과 : IssueStatRow
+이슈 DB 통계 조회 결과 : IssueStatsRow
 </li>
 <li class="">
 이슈 + 코멘트 복합 조회 결과 : IssueCommentRow
@@ -2963,7 +2968,7 @@ Document DB와 어울림
 AGGREGATE 1개당 REPOSITORY 1개
 <ul>
 <li class="">
-AGGREGATE ROOT를 통해서 AGGREGATE 밖에서 AGGEGATE 안의 객체로 접근함.
+AGGREGATE ROOT를 통해서 밖에서 AGGEGATE 안의 객체로 접근함.
 </li>
 </ul>
 </li>
@@ -3060,8 +3065,7 @@ http://www.gnu.org/software/src-highlite -->
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>
-<span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Issue</span>  <span style="color: #FF0000">{</span>
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Issue</span>  <span style="color: #FF0000">{</span>
     <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">Association&lt;Repo&gt;</span> repoId<span style="color: #990000">;</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
@@ -3076,6 +3080,7 @@ http://www.gnu.org/software/src-highlite -->
     <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #000000">Association</span></span><span style="color: #990000">(</span><span style="color: #009900">long</span> id<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
         <span style="font-weight: bold"><span style="color: #0000FF">this</span></span><span style="color: #990000">.</span>id <span style="color: #990000">=</span> id<span style="color: #990000">;</span>
     <span style="color: #FF0000">}</span>
+    <span style="color: #990000">...</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <ul>
 <li class=" slide">
@@ -3123,13 +3128,13 @@ Application/DB 레벨의 캐쉬에 더 유리하다.
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">SELECT</span></span> r<span style="color: #990000">.</span>name<span style="color: #990000">,</span> r<span style="color: #990000">.</span>description<span style="color: #990000">,</span> r<span style="color: #990000">,</span>created_by<span style="color: #990000">,</span> r<span style="color: #990000">.</span>created_at
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">SELECT</span></span> r<span style="color: #990000">.</span>name<span style="color: #990000">,</span> r<span style="color: #990000">.</span>description<span style="color: #990000">,</span> r<span style="color: #990000">.</span>created_by<span style="color: #990000">,</span> r<span style="color: #990000">.</span>created_at
 <span style="font-weight: bold"><span style="color: #0000FF">FROM</span></span> repo r
     <span style="font-weight: bold"><span style="color: #0000FF">INNER</span></span> <span style="font-weight: bold"><span style="color: #0000FF">JOIN</span></span> account a <span style="font-weight: bold"><span style="color: #0000FF">ON</span></span> a<span style="color: #990000">.</span>id <span style="color: #990000">=</span> r<span style="color: #990000">.</span>created_by
 <span style="font-weight: bold"><span style="color: #0000FF">WHERE</span></span> a<span style="color: #990000">.</span>email <span style="color: #990000">=</span> <span style="color: #990000">:</span>email</tt></pre></div></div>
 <ul>
 <li class=" slide">
-Repository에 조회조건 정도를 추가하고 Service단에서 다시 조합할 수도 있다.
+Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있다.
 <ul>
 <li class="">
 <code>List&lt;Repo&gt; findByCreatorEmail(String email)</code>
@@ -3149,7 +3154,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-weight: bold"><span style="color: #0000FF">WHERE</span></span> a<span style="color: #990000">.</span>email <span style="color: #990000">=</span> <span style="color: #990000">:</span>email</tt></pre></div></div>
 <ul>
 <li class=" slide">
-맞춤형 전용 DTO를 만들 수 있다.
+전용 DTO를 만들 수 있다.
 </li>
 <li class=" slide">
 클래스가 늘어나지만 장점도 있다.
@@ -3190,10 +3195,10 @@ DDD의 REPOSITORY는 도메인 레이어에 객체 지향적인 컬렉션 관리
 <h2>Lazy loading 다시 생각하기</h2>
 <ul>
 <li class=" slide">
-Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
+AGGREGATE를 정리하고 복합조회용 객체를 따로 정의하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
 </li>
 <li class=" slide">
-반대로 Lazy loading이 있어서 깊은 객체 그래프의 Aggreate를 설계하고자하는 유혹에 빠질수도 있다.
+반대로 Lazy loading이 있어서 깊은 객체 그래프의 ENTITY를 설계하는 유혹에 빠질 수도 있다.
 </li>
 <li class=" slide">
 Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
@@ -3228,8 +3233,9 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #009900">boolean</span> <span style="font-weight: bold"><span style="color: #000000">checkMyIssue</span></span><span style="color: #990000">(</span><span style="color: #008080">Issue</span> issue<span style="color: #990000">,</span> <span style="color: #009900">long</span> accountId<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
     <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="color: #990000">(</span>accountId <span style="color: #990000">==</span> issue<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">getCreatedBy</span></span><span style="color: #990000">())</span> <span style="color: #FF0000">{</span>
         issue<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">setMyIssue</span></span><span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">);</span>
-        <span style="font-style: italic"><span style="color: #9A1900">// 예상지 않게 상태를 바꾸고 있음.</span></span>
-        <span style="font-style: italic"><span style="color: #9A1900">// 특정 사용자에게 한정된 뷰의 값인데 캐쉬된 객체의 상태를 바꿔버림</span></span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 캐쉬된 객체의 상태를 바꿔버림</span></span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 문제1: 메서드 이름과 어울리지 않아 예측이 어렵다.</span></span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 값인데 Issue객체에 함께 있다.</span></span>
         <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">;</span>
     <span style="color: #FF0000">}</span>
     <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">;</span>
@@ -3270,7 +3276,7 @@ Domain object가 가진 속성과 연관된 행위
 상태를 바꿀 때의 정합성 검사를 포함
 </li>
 <li class="">
-예) Domain Event 추가. <a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html">Springg Data의 AbstractAggregateRoot</a>
+예) Domain Event 추가. <a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html">Springg Data의 AbstractAggregateRoot</a>에 있는 메서드 참고
 </li>
 </ul>
 </li>
@@ -3331,7 +3337,7 @@ IssueCreationCommand, IssueModificationCommand를 따로 만들어야하나? (id
 프레임워크의 특정 기능을 위해서 추구하는 객체 설계를 포기하는 상황이 적을수록 좋다.
 <ul>
 <li class="">
-예: Spring JDBC의 <code>BeanPropertyRowMapper</code> 를 쓰러면 setter가 필수
+예: Spring JDBC의 <code>BeanPropertyRowMapper</code> 를 쓰려면 setter가 필수. Cache 되었을때 부작용을 막기 위해 Immutable하게 만들고 싶어도 할 수 없다.
 </li>
 </ul>
 </li>
@@ -3816,6 +3822,9 @@ ENTITY 설계는 (JPA나 Spring JDBC 같은) 특정 구현 기술보다 더 중�
 </li>
 <li class="">
 <a href="https://www.slideshare.net/SpringCentral/domaindriven-design-with-relational-databases-using-spring-data-jdbc">Domain-Driven Design with Relational Databases Using Spring Data JDBC</a> (SpringOne Platform 2019의 발표)
+</li>
+<li class="">
+<a href="https://www.slideshare.net/baejjae93/ss-151545329">우아한 객체지향</a> (우아한 테크 세미나 2019.06.20)
 <ul>
 <li class="">
 <a href="https://youtu.be/GOSW911Ox6s">발표 영상</a>
@@ -3853,9 +3862,6 @@ Effective Aggregate Design
 <a href="https://dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_3.pdf">Part III: Gaining Insight Through Discovery</a>
 </li>
 </ul>
-</li>
-<li class="">
-<a href="https://www.slideshare.net/baejjae93/ss-151545329">우아한 객체지향</a> (우아한 테크 세미나 2019.06.20)
 </li>
 </ul>
 </section>
