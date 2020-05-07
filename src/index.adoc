@@ -13,16 +13,21 @@
 === 발표자 : 정상혁
 
 [incremental="true"]
-* 이력
+* 경력
 ** (2004~2008) 삼성 SDS : 공공기관 SI 프로젝트 참여
 ** (2008~2020) 네이버 : 다양한 조직의 코드를 분석할 기회가 많았음
+*** 현재 : Platform Labs 소속, 네이버 페이 관련 프로젝트 참여 중
 * 돌아보니 대부분 DB와 연결된 기능을 개발하는 프로젝트를 수행
 
-=== 반복되는 고민
+=== 경력동안 늘 떠나지 않은 고민
 
 [incremental="true"]
 * DB 테이블과 연관된 클래스를 어떻게 만들어야할까?
 * 퍼시스턴스 프레임워크는 어떤 것을 써야 할까?
+
+=== 발표 주제
+[incremental="true"]
+* 이 고민을 풀어가는 과정에서 경험, 글, 주변 동료로부터 배운 것들
 
 = 난관의 여정
 
@@ -303,7 +308,7 @@ List<UserDTO> dtos = query.list(
 * JPA의 `@Entity` 로 익숙한 개념 : DB 테이블과 대응되는 객체
 
 === DDD의 용어
-(DDD 책에서 처럼 대문자료 표기)
+(DDD 책에서 처럼 대문자로 표기)
 
 [incremental="true"]
 * ENTITY :  연속성과 식별성의 맥락에서 정의되는 객체
@@ -312,6 +317,8 @@ List<UserDTO> dtos = query.list(
 == ENTITY를 감추기
 
 === ENTITY가 뷰, API 응답에 바로 노출될 때의 비용
+
+[incremental="true"]
 * 캡슐화를 지키기 어려워진다.
 ** 꼭 필요하지 않는 속성도 외부로 노출되어 향후 수정하기 어려워진다.
 * JSP, Freemarker에서의 객체 참조
@@ -322,6 +329,8 @@ List<UserDTO> dtos = query.list(
 ** `@JsonIgnore` , `@JsonView` 같은 선언이 많아지면 JSON의 형태를 클래스만 보고 예측하는 난이도가 올라간다.
 
 === 외부 노출용 DTO를 따로 만들기
+
+[incremental="true"]
 * ENTITY -> DTO 변환 로직은 컴파일 타임에 체크된다.
 * DTO는 비교적 구조를 단순하게 가져갈 수 있다.
 ** 더 단순한 JSON 응답, JSP에서 쓰기 좋은 구조를 만들기에 유리하다.
@@ -516,7 +525,6 @@ Developer 1: I agree. I have found that lazy-loading in the command side means I
 ----
 
 == Immutable과 Rich Domain Object
-[incremental="true"]
 
 === 캐쉬 부작용 사례
 [source,java]
@@ -541,13 +549,12 @@ boolean checkMyIssue(Issue issue, long accountId) {
 }
 ----
 
-
 === Immutable 객체의 장점
+
+[incremental="true"]
 * Cache 하기에 안전하다.
 * 다른 레이어에 메서드 파라미터로 보내도 값이 안 바뀌었다는 확신을 할 수 있다.
-
-* DTO류가 여러 레이어를 오간다면 Immutable하면 좋다.
-
+* DTO류가 여러 레이어를 오간다면 Immutable하면 더 좋다.
 
 ===  Rich Domain Object
 
@@ -562,7 +569,7 @@ boolean checkMyIssue(Issue issue, long accountId) {
 * 영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야한다.
 ** 메서드명도 그 행위를 잘 드러내어야한다. ( `setTitle()` -> `changeTitle()` )
 
-== 끊나지 않는 고민
+== 끝나지 않는 고민
 [incremental="true"]
 * 비슷한 속성을 가진 클래스가 너무 많이 생기는 건 아닐까?
 ** 예) 이슈의 제목과 관련된 속성을 담은 클래스
@@ -576,9 +583,10 @@ boolean checkMyIssue(Issue issue, long accountId) {
 == 프레임워크 돌아보기
 
 [incremental="true"]
-* '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴로워진다.
+* '선을 넘는 Entity' 로는 어떤 프레임워크를 써도 개발이 괴롭다.
 ** 반대로 경계가 잘 처진 Entity를 쓴다면 프레임워크의 마법이 필수적이지 않다.
-* 편리성에 함정에 빠질 수 있는 프레임워크 사용법에 대해서 주의해야 한다.
+* 프레임워크의 특정 기능을 위해서 추구하는 객체 설계를 포기하는 상황이 적을수록 좋다.
+** 예: Spring JDBC의 `BeanPropertyRowMapper` 를 쓰러면 setter가 필수
 
 == SQL관리 방안
 
@@ -591,7 +599,7 @@ boolean checkMyIssue(Issue issue, long accountId) {
 [source,java]
 ----
 class AccountSqls {
-    static String selectById =
+    static String final selectById =
         """
         SELECT
             id, user_id, email
@@ -602,6 +610,12 @@ class AccountSqls {
         """;
     }
 }
+
+interface AccountRepository extends CrudRepository<Account, Long> {
+    @Query(AccountSqls.selectById)
+    Account findById(Long id);
+}
+
 ----
 
 === Groovy로 SQL 관리
@@ -643,7 +657,7 @@ class AccountSqls {
 }
 ----
 
-:image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enum 자동완성"]
+image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enum 자동완성"]
 
 === Kotlin 으로 쿼리 관리
 [incremental="true"]
@@ -654,7 +668,7 @@ class AccountSqls {
 *** Lombok과 같이 쓰면 컴파일 순서 등을 신경써야 함. ( https://d2.naver.com/helloworld/6685007[Kotlin 도입 과정에서 만난 문제와 해결 방법] )
 * Groovy 대비 강점
 ** 컴파일 타임에 체크되는 범위가 더 넓음
-** :image:img/kotlin-warning.jpg[kotlin-warning.jpg, title="IntelliJ Kotlin 문법 경고"]
+** image:img/kotlin-warning.jpg[kotlin-warning.jpg, title="IntelliJ Kotlin 문법 경고"]
 ** Groovy에서는 위와 같은 경우 경고가 없이 쿼리 `null` 이라는 문자열이 마지막에 의도하지 않게 들어감
 
 == Spring JDBC
@@ -673,6 +687,8 @@ class AccountSqls {
 * 성숙한 사용자는 이미 2가지 프로그래밍 모델을 섞어서 쓰고 있을 가능성이 높음
 ** CUD, 단순R : Entity, Repository, 쿼리 자동 생성
 ** 복잡한 R : 응답전용 DTO,  + QueryDSL 등으로 개념적인 쿼리는 직접 작성
+* Trade-Off
+** 개발 중 스키마 자동 생성 VS Local 서버의 재시작 시간.
 
 == MyBatis
 [incremental="true"]
@@ -726,11 +742,13 @@ class AccountSqls {
 
 === 다른 Framework에서도 활용할만한 요소
 
+[incremental="true"]
 * https://mybatis.org/mybatis-3/statement-builders.html[SQL Builder]
 * https://mybatis.org/mybatis-dynamic-sql/docs/spring.html[Spring NamedParameterJdbcTemplate + MyBatis Dynamic SQL]
 
 == 대안 Framework
 
+[incremental="true"]
 * JOOQ : Type safety를 활용할 수 있음.
 * Requery : Native 쿼리를 Annotation 기반의 결과 매핑
 * Spring Data JDBC -> 다음 세션
@@ -742,25 +760,37 @@ class AccountSqls {
 
 == 프레임워크 활용 전략
 
+[incremental="true"]
 * 프레임워크를 섞어서 사용
 ** CUD + 단순 R : JPA
 ** 복합적인 R
-*** JPA를 이미 분리된 패턴으로 구현하고 있을 것임
-*** Spring JDBC를 추천 : 단순한 쿼리 실행기, 확장 가능
+*** JPA를 써도 분리된 패턴으로 구현하고 있을 것임
+*** Spring JDBC로도 쓸만함 : 단순한 쿼리 실행기, 확장 가능
 * 하나의 프레임워크로 통일한다면 Spring Data JDBC도 고려해볼만함
-** Entity 단위의 접근이 어렵다면 Spring JDBC처럼 사용하면 됨.
+** Entity 단위의 접근이 어려운 부분은 Spring JDBC처럼 사용하면 됨.
 
 === 아키텍처 전락
 [incremental="true"]
-* AGGREGATE가 단위로 정리하기 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만하다.
+* AGGREGATE가 단위로 정리하기 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만함.
 
 === 실무 사례 : 복합조회 API 서버 분리
 
+(구글 검색으로 찾은 비슷한 느낌의 화면)
+
 [incremental="true"]
-* 복잡한 쿼리를 담당하는 별도의 API서버 개발
-* AGGREAGATE 경계를 넘어서는 복잡한 조회를 Native SQL 위주로 개발
-** Spring JDBC + Spring Data JDBC의 일부 기능 사용
+image:img/complex-search.png[complex-search.png, title="복잡한 조회 화면]
+
+[incremental="true"]
+* 복잡한 쿼리를 담당하는 API서버 분리 개발
+* AGGREAGATE 경계를 넘어서는 복잡한 조회
 ** REPOSITORY가 아닌 DAO 개념으로 접근
+* Native SQL 중심 개발
+** 쿼리 힌트, 최적화를 위해 복잡한 형태의 쿼리가 많이 들어감
+* Spring JDBC + Spring Data JDBC의 일부 기능 사용
+** JPA Dialect가 없는 자체 분산 DB(NBase-T) 사용
+** JPA를 쓸 수 있다고해도 적용의 이득이 없는 상황
+
+image:img/architecure-case.png[architecure-case.png, title="복잡한 조회를 담당하는 API 서버 분리"]
 
 = 정리
 == 요약
@@ -776,8 +806,11 @@ class AccountSqls {
 ** 고치기 쉬운 , 협업하기 쉬운, 확장하기 쉬운 코드
 
 == 키워드
-
+[incremental="true"]
 * AGGREGATE ROOT
+* '객체지향 설계는 (J2EE나 심지어 자바 같은) 특정 구현 기술보다 더 중요하다.' (로드 존슨)
+** ENTITY 설계는 (JPA나 Spring JDBC 같은) 특정 구현 기술보다 더 중요하다.
+
 
 == 참고 & 추천 자료
 
