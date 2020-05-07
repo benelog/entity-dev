@@ -6,7 +6,7 @@
         <title>엔티티 클래스 설계와 퍼시스턴스 프레임워크</title>
         <meta name="viewport" content="width=1024, user-scalable=no">
         <meta name="author" content="정상혁" />
-        <meta name="generator" content="AsciiDoc 8.6.10" />
+        <meta name="generator" content="AsciiDoc 9.0.0rc1" />
         <meta name="presdate" content="2020-05-07" />
         
         <!-- Core and extension CSS files -->
@@ -2374,21 +2374,26 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Application</span> <span style="font-weight: bold"><span style="color: #0000FF">extends</span></span> WebMvcConfigurerAdapter <span style="color: #FF0000">{</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">static</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">main</span></span><span style="color: #990000">(</span>String<span style="color: #990000">[]</span> args<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+        SpringApplication<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">run</span></span><span style="color: #990000">(</span>Application<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">class</span></span><span style="color: #990000">,</span> args<span style="color: #990000">);</span>
+    <span style="color: #FF0000">}</span>
+
     @Override
-    <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">addViewControllers</span></span><span style="color: #990000">(</span><span style="color: #008080">ViewControllerRegistry</span> registry<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>           <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">addViewControllers</span></span><span style="color: #990000">(</span><span style="color: #008080">ViewControllerRegistry</span> registry<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #009900">void</span> <span style="font-weight: bold"><span style="color: #000000">addViewControllers</span></span><span style="color: #990000">(</span><span style="color: #008080">ViewControllerRegistry</span> registry<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
         registry<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">addViewController</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"/repos"</span><span style="color: #990000">).</span><span style="font-weight: bold"><span style="color: #000000">setViewName</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"repos"</span><span style="color: #990000">);</span>
-    <span style="color: #FF0000">}</span></tt></pre></div></div>
+     <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
 <div class="title">repos.jsp</div>
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>&lt;%@page import="org.springframework.jdbc.core.ColumnMapRowMapper"%&gt;
-&lt;%@page import="javax.servlet.jsp.tagext.TryCatchFinally"%&gt;
-&lt;%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%&gt;
+<pre><tt>&lt;%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%&gt;
 &lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
 &lt;%@ page import="org.springframework.web.context.support.WebApplicationContextUtils"%&gt;
+&lt;%@ page import="org.springframework.jdbc.core.ColumnMapRowMapper"%&gt;
 &lt;%@ page import="org.springframework.web.context.WebApplicationContext"%&gt;
 &lt;%@ page import="javax.sql.DataSource"%&gt;
 &lt;%@ page import="java.util.List"%&gt;
@@ -2508,7 +2513,7 @@ Map에는 뭐가 들어 있는지, 어디에서 어떤 속성이 참조되고 �
 </ul>
 </li>
 <li class=" slide">
-뭔가 객체가 필요하다
+속성값을 담을 클래스가 필요하다
 </li>
 </ul>
 </div>
@@ -2578,7 +2583,7 @@ Account(사용자 계정) 객체가 account.id를 참조하는 모든 테이블�
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Acount</span> <span style="color: #FF0000">{</span>
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">Account</span> <span style="color: #FF0000">{</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Issue&gt;</span> myIssues<span style="color: #990000">;</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Repo&gt;</span> myRepos<span style="color: #990000">;</span>
      <span style="font-weight: bold"><span style="color: #0000FF">private</span></span> <span style="color: #008080">List&lt;Comment&gt;</span> myComment<span style="color: #990000">;</span>
@@ -2586,7 +2591,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <ul>
 <li class=" slide">
-User(Account) 캘래스를 보면 시스템의 규모나 ORM 사용 성숙도를 파아갛는데 도움이 됨.
+User(Account) 클래스를 보면 ORM 사용 성숙도를 알 수 있다.
 </li>
 </ul>
 <div class="sect2">
@@ -2626,7 +2631,7 @@ Lazy loading을 쓰지 않고 수동으로 값을 채울 때의 난관
 <h2>만능 클래스가 뷰까지 바로 전달됨</h2>
 <ul>
 <li class=" slide">
-JSP/Freemarker에서 깊은 객체 탐색이 이루어질 가능성이 높음
+JSP/Freemarker, SpEL에서 깊은 객체 탐색이 이루어질 가능성이 높음
 <ul>
 <li class="">
 객체 참조 관계를 바꾸는 비용이 큼
@@ -2741,7 +2746,7 @@ DTO와 동일한 의미라고 밝힌 서적도 있음.
 원격호출을 효율화하기 위해 나온 패턴
 <ul>
 <li class="">
-<a href="https://martinfowler.com/eaaCatalog/dataTransferObject.html">마틴 파울러의 페이지</a>에서 용어의 변천사까지 설명
+<a href="https://martinfowler.com/eaaCatalog/dataTransferObject.html">마틴 파울러의 페이지</a>에서 용어의 역사까지 설명
 </li>
 <li class="">
 <a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0131422464">Core J2EE Pattern 2판(2003년)</a>에서는 TO로 이름 붙임.
@@ -2760,10 +2765,10 @@ DTO와 동일한 의미라고 밝힌 서적도 있음.
 </ul>
 </li>
 <li class=" slide">
-해결하는 문제와 맥락이 달라졌는데, 같은 패턴 용어를 쓸 수 있을까?
+해결하는 문제와 맥락이 달라졌는데 같은 패턴 이름을 쓸 수 있을까?
 <ul>
 <li class="">
-'레이어 간의 경계를 넘어서 데이터를 전달'하는 역할은 과거와 동일하다고 생각할 수도 있음.
+'레이어 간의 경계를 넘어서 데이터를 전달&#8217;하는 역할은 과거와 동일하다고 생각할 수 있음.
 </li>
 <li class="">
 다만 다양한 객체의 역할을 다 DTO로 칭하는 건 혼란도 있음.
@@ -2804,7 +2809,7 @@ JPA의 <code>@Entity</code> 로 익숙한 개념 : DB 테이블과 대응되는 
 </div>
 </section>
 <section class="slide">
-<h2>DDD의 패턴</h2>
+<h2>DDD의 용어</h2>
 <p>(DDD 책에서 처럼 대문자료 표기)</p>
 <ul>
 <li class=" slide">
@@ -2816,9 +2821,9 @@ VALUE OBJECT : 식별성 없이 속성만으로 동일성을 판단하는 객체
 </ul>
 </section>
 <section class="slide">
-<h2>ENTITY를 뷰, 외부 레이어에는 감추기</h2>
+<h2>ENTITY를 감추기</h2>
 <div class="sect2">
-<h3 id="_entity가_ui_레이어에_바로_노출될_때의_문제점">ENTITY가 UI 레이어에 바로 노출될 때의 문제점</h3>
+<h3 id="_entity가_뷰_api_응답에_바로_노출될_때의_비용">ENTITY가 뷰, API 응답에 바로 노출될 때의 비용</h3>
 <ul>
 <li class="">
 캡슐화를 지키기 어려워진다.
@@ -2833,6 +2838,14 @@ JSP, Freemarker에서의 객체 참조
 <ul>
 <li class="">
 컴파일 시점의 검사 범위가 좁다 &#8594; ENTITY 클래스를 수정했을때 뷰에서 에러가 나는 경우가 뒤늦게 발견된다.
+</li>
+<li class="">
+JPA를 쓴다면 <code>OpenEntityManagerInViewFilter</code> 를 고려해야한다.
+<ul>
+<li class="">
+초보 개발자는 쿼리가 실행되는 시점을 예상하지 못한다.
+</li>
+</ul>
 </li>
 </ul>
 </li>
@@ -2899,13 +2912,22 @@ DTO의 변화는 외부 인터페이스로 의식해서 관리하는 범위가 �
 <h3 id="_aggregate는">AGGREGATE는?</h3>
 <ul>
 <li class=" slide">
-하나의 단위로 취급되는 연관된 객체군 (ENTITY와 VALUE OBJECT의 묶음)
+하나의 단위로 취급되는 연관된 객체군, 객체망
 <ul>
+<li class="">
+ENTITY와 VALUE OBJECT의 묶음
+</li>
 <li class="">
 엄격한 데이터 일관성, 제약사항이 유지되어야 할 단위
 </li>
 <li class="">
-Transaction, 불변식(Invariants, 데이터가 변경될 때마다 유지돼야 하는 규칙)이 적용되는 단위
+Transaction, Lock의 필수 범위
+</li>
+<li class="">
+불변식(Invariants, 데이터가 변경될 때마다 유지돼야 하는 규칙)이 적용되는 단위
+</li>
+<li class="">
+Document DB와 어울림
 </li>
 </ul>
 </li>
@@ -2941,6 +2963,9 @@ http://www.gnu.org/software/src-highlite -->
 <li class="">
 AGGREGATE 밖은 eventual consistancy를 목표로 할 수도 있다.
 </li>
+<li class="">
+여러 AGGREGATE의 변경은 Event, SAGA, TCC 등의 패턴을 활용할 수도 있다.
+</li>
 </ul>
 </li>
 <li class=" slide">
@@ -2955,7 +2980,7 @@ AGGREGATE별로 Cache를 적용하기에도 좋다
 <h3 id="_aggregate_식별시_의식할_점">AGGREGATE 식별시 의식할 점</h3>
 <ul>
 <li class=" slide">
-CUD + 단순R(findById) 를 우선시 하여
+CUD + 단순R(findById)에 집중
 <ul>
 <li class="">
 모든 R을 다 포용하려고 한다면 깊은 객체 그래프가 나온다.
@@ -3032,22 +3057,88 @@ http://www.gnu.org/software/src-highlite -->
 </section>
 <section class="slide">
 <h2>여러 AGGREGATE에 걸친 조회</h2>
-<ul>
-<li class=" slide">
-Service 레이어에서 조합할 수 있다.
-</li>
-</ul>
+<div class="sect2">
+<h3 id="_service_레이어에서_조합">Service 레이어에서 조합</h3>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>
-<span style="color: #008080">IssueEntity</span> issue <span style="color: #990000">=</span> issueRepository<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">findByCreatorId</span></span><span style="color: #990000">(</span>accountId<span style="color: #990000">);</span>
+<span style="color: #008080">MilestoneEntity</span> milestone <span style="color: #990000">=</span> milestoneRepository<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">findByid</span></span><span style="color: #990000">(</span>milestoneId<span style="color: #990000">);</span>
+<span style="color: #009900">int</span> issueCount <span style="color: #990000">=</span> issueRepository<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">countByMilestoneId</span></span><span style="color: #990000">(</span>milestoneId<span style="color: #990000">)</span>
 
-MyProjectResponse <span style="color: #990000">=</span>
-
-</tt></pre></div></div>
+<span style="color: #008080">var</span> miletoneReponse  <span style="color: #990000">=</span> MilestoneResponse<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">builder</span></span><span style="color: #990000">()</span>
+    <span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">name</span></span><span style="color: #990000">(</span>milestone<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">getName</span></span><span style="color: #990000">())</span>
+    <span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">endedAt</span></span><span style="color: #990000">(</span>milestone<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">endedAt</span></span><span style="color: #990000">())</span>
+    <span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">issueCount</span></span><span style="color: #990000">(</span>issueCount<span style="color: #990000">)</span>
+    <span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">build</span></span><span style="color: #990000">();</span></tt></pre></div></div>
+<ul>
+<li class=" slide">
+DB 성능에 더 유리할 수 있다.
+<ul>
+<li class="">
+각각의 쿼리가 단순해 진다.
+</li>
+</ul>
+</li>
+<li class=" slide">
+Application/DB 레벨의 캐쉬에 더 유리하다.
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_join이_필수적인_경우">JOIN이 필수적인 경우</h3>
+<div class="listingblock">
+<div class="title">WHERE절에 다른 AGGRAGATE의 속성이 필요한 경우</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">SELECT</span></span> r<span style="color: #990000">.</span>name<span style="color: #990000">,</span> r<span style="color: #990000">.</span>description<span style="color: #990000">,</span> r<span style="color: #990000">,</span>created_by<span style="color: #990000">,</span> r<span style="color: #990000">.</span>created_at
+<span style="font-weight: bold"><span style="color: #0000FF">FROM</span></span> repo r
+    <span style="font-weight: bold"><span style="color: #0000FF">INNER</span></span> <span style="font-weight: bold"><span style="color: #0000FF">JOIN</span></span> account a <span style="font-weight: bold"><span style="color: #0000FF">ON</span></span> a<span style="color: #990000">.</span>id <span style="color: #990000">=</span> r<span style="color: #990000">.</span>created_by
+<span style="font-weight: bold"><span style="color: #0000FF">WHERE</span></span> a<span style="color: #990000">.</span>email <span style="color: #990000">=</span> <span style="color: #990000">:</span>email</tt></pre></div></div>
+<ul>
+<li class=" slide">
+Repository에 조회조건 정도를 추가하고 Service단에서 다시 조합할 수도 있다.
+<ul>
+<li class="">
+<code>List&lt;Repo&gt; findByCreatorEmail(String email)</code>
+</li>
+</ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="title">SELECT 결과까지 다른 AGGRAGATE의 속성을 포함할 경우</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">SELECT</span></span> r<span style="color: #990000">.</span>name<span style="color: #990000">,</span> r<span style="color: #990000">.</span>description<span style="color: #990000">,</span> a<span style="color: #990000">.</span>name <span style="font-weight: bold"><span style="color: #0000FF">AS</span></span> creator_name <span style="color: #990000">,</span> a<span style="color: #990000">.</span>email
+<span style="font-weight: bold"><span style="color: #0000FF">FROM</span></span> repo r
+    <span style="font-weight: bold"><span style="color: #0000FF">INNER</span></span> <span style="font-weight: bold"><span style="color: #0000FF">JOIN</span></span> account a <span style="font-weight: bold"><span style="color: #0000FF">ON</span></span> a<span style="color: #990000">.</span>id <span style="color: #990000">=</span> r<span style="color: #990000">.</span>created_by
+<span style="font-weight: bold"><span style="color: #0000FF">WHERE</span></span> a<span style="color: #990000">.</span>email <span style="color: #990000">=</span> <span style="color: #990000">:</span>email</tt></pre></div></div>
+<ul>
+<li class=" slide">
+맞춤형 전용 DTO를 만들 수 있다.
+</li>
+<li class=" slide">
+클래스가 늘어나지만 장점도 있다.
+<ul>
+<li class="">
+Aggregate를 단순하게 유지할 수 있다.
+</li>
+<li class="">
+JPA의 경우 : Persistent Context를 의식하지 않아도 된다.
+</li>
+</ul>
+</li>
+<li class=" slide">
+이런 쿼리는 REPOSITORY보다는 DAO에 어울린다.
+</li>
+</ul>
+</div>
 </section>
 <section class="slide">
 <h2>REPOSITORY vs DAO</h2>
@@ -3070,7 +3161,10 @@ DDD의 REPOSITORY는 도메인 레이어에 객체 지향적인 컬렉션 관리
 <section class="slide">
 <h2>Lazy loading 다시 생각하기</h2>
 <ul>
-<li class="">
+<li class=" slide">
+Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 꼭 필요할까 생각해볼수 있다.
+</li>
+<li class=" slide">
 Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 </li>
 </ul>
@@ -3083,11 +3177,86 @@ Developer 1: I agree. I have found that lazy-loading in the command side means I
 </div></div>
 </section>
 <section class="slide">
-<h2>Immutable vs Rich Domain Object</h2>
+<h2>Immutable과 Rich Domain Object</h2>
+<div class="sect2">
+<h3 id="_캐쉬_부작용_사례">캐쉬 부작용 사례</h3>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>
+<span style="font-weight: bold"><span style="color: #0000FF">public</span></span> <span style="color: #008080">Issue</span> <span style="font-weight: bold"><span style="color: #000000">findIssue</span></span><span style="color: #990000">(</span><span style="color: #009900">long</span> issueId<span style="color: #990000">,</span> <span style="color: #009900">long</span> accountId<span style="color: #990000">)</span>
+    <span style="color: #008080">Issue</span> issue <span style="color: #990000">=</span> repository<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">findById</span></span><span style="color: #990000">(</span>issueId<span style="color: #990000">);</span> <span style="font-style: italic"><span style="color: #9A1900">// 캐쉬된 객체를 변환</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span><span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000000">isMyIssue</span></span><span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000000">checkMyIssue</span></span><span style="color: #990000">(</span>issue<span style="color: #990000">,</span> accountId<span style="color: #990000">))</span> <span style="color: #FF0000">{</span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 추가 적인 처리</span></span>
+    <span style="color: #FF0000">}</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> issue<span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span>
+
+<span style="color: #009900">boolean</span> <span style="font-weight: bold"><span style="color: #000000">checkMyIssue</span></span><span style="color: #990000">(</span><span style="color: #008080">Issue</span> issue<span style="color: #990000">,</span> <span style="color: #009900">long</span> accountId<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="color: #990000">(</span>accountId <span style="color: #990000">==</span> issue<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">getCreatedBy</span></span><span style="color: #990000">())</span> <span style="color: #FF0000">{</span>
+        issue<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">setMyIssue</span></span><span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">);</span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 예상지 않게 상태를 바꾸고 있음.</span></span>
+        <span style="font-style: italic"><span style="color: #9A1900">// 특정 사용자에게 한정된 뷰의 값인데 캐쉬된 객체의 상태를 바꿔버림</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">;</span>
+    <span style="color: #FF0000">}</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+<div class="sect2">
+<h3 id="_immutable_객체의_장점">Immutable 객체의 장점</h3>
+<ul>
+<li class="">
+Cache 하기에 안전하다.
+</li>
+<li class="">
+다른 레이어에 메서드 파라미터로 보내도 값이 안 바뀌었다는 확신을 할 수 있다.
+</li>
+<li class="">
+DTO류가 여러 레이어를 오간다면 Immutable하면 좋다.
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_rich_domain_object">Rich Domain Object</h3>
+<ul>
+<li class=" slide">
+Domain object가 가진 속성과 연관된 오퍼레이션
+<ul>
+<li class="">
+해당 객체에 있는 것이 책임이 자연스럽다. (INFORMATION EXEPERT 패턴)
+</li>
+</ul>
+</li>
+<li class=" slide">
+상태를 바꾸는 메서드가 포함될 수도 있다.
+<ul>
+<li class="">
+상태를 바꿀 때의 정합성 검사를 포함
+</li>
+<li class="">
+예) Domain Event 추가. <a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/AbstractAggregateRoot.html">Springg Data의 AbstractAggregateRoot</a>
+</li>
+</ul>
+</li>
+<li class=" slide">
+Immutable이 아니게 될 수 있다.
+</li>
+<li class=" slide">
+영속화될 Domain Object라면 상태를 바꾸는건 시스템의 상태를 바꾸는 경우에 한해야한다.
+<ul>
+<li class="">
+메서드명도 그 행위를 잘 드러내어야한다. ( <code>setTitle()</code> &#8594; <code>changeTitle()</code> )
+</li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 <h1 id="_퍼시스턴스_프레임워크">퍼시스턴스 프레임워크</h1>
 <section class="slide">
-<h2>프레임워크 다시 생각하기</h2>
+<h2>프레임워크 돌아보기</h2>
 <ul>
 <li class=" slide">
 <em>선을 넘는 Entity</em> 로는 어떤 프레임워크를 써도 개발이 괴로워진다.
@@ -3103,20 +3272,198 @@ Developer 1: I agree. I have found that lazy-loading in the command side means I
 </ul>
 </section>
 <section class="slide">
+<h2>SQL관리 방안</h2>
+<ul>
+<li class=" slide">
+XML을 벗어나면 컴파일 타임의 검사 영역이 늘어나서 생산성에 큰 도움이 된다.
+</li>
+<li class=" slide">
+Java/Kotlin/Groovy를 이용한 쿼리 관리 : JPA, MyBatis, Spring JDBC 모두에서 쓸 수 있다.
+</li>
+</ul>
+<div class="sect2">
+<h3 id="_jdk_13이상의_raw_literal_string">JDK 13이상의 raw literal String</h3>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">AccountSqls</span> <span style="color: #FF0000">{</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">static</span></span> <span style="color: #008080">String</span> selectById <span style="color: #990000">=</span>
+        <span style="color: #FF0000">"""</span>
+<span style="color: #FF0000">        SELECT</span>
+<span style="color: #FF0000">            id, user_id, email</span>
+<span style="color: #FF0000">        FROM</span>
+<span style="color: #FF0000">            account</span>
+<span style="color: #FF0000">        WHERE</span>
+<span style="color: #FF0000">            id = :id</span>
+<span style="color: #FF0000">        """</span><span style="color: #990000">;</span>
+    <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+<div class="sect2">
+<h3 id="_groovy로_sql_관리">Groovy로 SQL 관리</h3>
+<ul>
+<li class=" slide">
+Java문법 호환성으로 학습비용 적음
+<ul>
+<li class="">
+Lombok등을 써도 잘 어울림
+</li>
+</ul>
+</li>
+<li class=" slide">
+따옴표 3개만 쓴다면 언젠가 아래 명령어로 일괄 파일 변환 가능
+<ul>
+<li class="">
+<code>find . -name '*.groovy' -print0 | xargs -0 rename 's/.groovy$/.java/</code>
+</li>
+</ul>
+</li>
+<li class=" slide">
+Java 코드의 아노테이션에서 Groovy 코드의 상수를 참조할 때 IntelliJ에서 버그가 있음
+<ul>
+<li class="">
+<a href="https://youtrack.jetbrains.com/issue/IDEA-205734">https://youtrack.jetbrains.com/issue/IDEA-205734</a> 에 신고
+</li>
+</ul>
+</li>
+<li class=" slide">
+String interpolation으로 Dynamic SQL 생성 가능
+<ul>
+<li class="">
+Enum 클래스 등에 대한 오타체크, 자동완성도 됨
+</li>
+</ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="color: #008080">AccountSqls</span> <span style="color: #FF0000">{</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">static</span></span> <span style="color: #008080">String</span> <span style="font-weight: bold"><span style="color: #000000">selectAccounts</span></span><span style="color: #990000">(</span><span style="color: #008080">AccountCriteria</span> criteria<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"""</span>
+<span style="color: #FF0000">        SELECT</span>
+<span style="color: #FF0000">            id, name, email</span>
+<span style="color: #FF0000">        FROM</span>
+<span style="color: #FF0000">            account</span>
+<span style="color: #FF0000">        WHERE</span>
+<span style="color: #FF0000">            user_grade = :crteria.grade</span>
+<span style="color: #FF0000">        ${</span>
+<span style="color: #FF0000">            if (criteria.grade == Grade.SPECIAL) {</span>
+<span style="color: #FF0000">                """</span>
+                    <span style="color: #008080">AND</span> last_login <span style="color: #990000">&lt;</span> <span style="color: #990000">:</span>criteria<span style="color: #990000">.</span>loginDateLimit
+                <span style="color: #FF0000">"""</span>
+<span style="color: #FF0000">            } else {</span>
+<span style="color: #FF0000">                """</span>
+                    <span style="color: #008080">AND</span> last_login <span style="color: #990000">&gt;</span> <span style="color: #990000">:</span>criteria<span style="color: #990000">.</span>loginDateLimit
+                <span style="color: #FF0000">"""</span>
+<span style="color: #FF0000">            }</span>
+<span style="color: #FF0000">        }</span>
+<span style="color: #FF0000">        """</span>
+    <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+<p>:<span class="image">
+<img src="img/groovy-auto-complete.png" alt="groovy-auto-complete.png" />
+</span></p>
+</div>
+<div class="sect2">
+<h3 id="_kotlin_으로_쿼리_관리">Kotlin 으로 쿼리 관리</h3>
+<ul>
+<li class=" slide">
+Groovy 대비 약점
+<ul>
+<li class="">
+Java만 아는 사람에는 새로운 언어라는 거부감이 있을 수도 있음
+<ul>
+<li class="">
+(반론) SQL관리 용도로 몇가지 문법만 쓰면 학습 비용이 높지 않음.
+</li>
+</ul>
+</li>
+<li class="">
+Java와 섞어 쓸때 주의할 점
+<ul>
+<li class="">
+Lombok과 같이 쓰면 컴파일 순서 등을 신경써야 함. ( <a href="https://d2.naver.com/helloworld/6685007">Kotlin 도입 과정에서 만난 문제와 해결 방법</a> )
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=" slide">
+Groovy 대비 강점
+<ul>
+<li class="">
+컴파일 타임에 체크되는 범위가 더 넓음
+</li>
+<li class="">
+:<span class="image">
+<img src="img/kotlin-warning.jpg" alt="kotlin-warning.jpg" />
+</span>
+</li>
+<li class="">
+Groovy에서는 위와 같은 경우 경고가 없이 쿼리 <code>null</code> 이라는 문자열이 마지막에 의도하지 않게 들어감
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section class="slide">
 <h2>Spring JDBC</h2>
+<ul>
+<li class=" slide">
+단순한 쿼리 실행기. JDBC wrapper
+</li>
+<li class=" slide">
+확장 가능
+<ul>
+<li class="">
+비교적 Low level 인터페이스 제공 : RowMapper
+</li>
+<li class="">
+<a href="https://serkan-ozal.github.io/spring-jdbc-roma/">Spring-JDBC-ROMA</a>도 확장 사례
+</li>
+</ul>
+</li>
+<li class=" slide">
+쿼리 관리 방법도 프레임워크에서 강제하지 않는다.
+</li>
+</ul>
 </section>
 <section class="slide">
 <h2>JPA</h2>
 <ul>
-<li class="">
+<li class=" slide">
 OR-MAPPING, 퍼시스턴스 컨텍스트 : 몇가지 좋은 원칙을 지키도록 해준다.
+<ul>
+<li class="">
+Entity의 상태가 변한다는 것&#8594; DB에도 Update된다는 의미
+</li>
+</ul>
+</li>
+<li class=" slide">
+성숙한 사용자는 이미 2가지 프로그래밍 모델을 섞어서 쓰고 있을 가능성이 높음
+<ul>
+<li class="">
+CUD, 단순R : Entity, Repository, 쿼리 자동 생성
+</li>
+<li class="">
+복잡한 R : 응답전용 DTO,  + QueryDSL
+</li>
+</ul>
 </li>
 </ul>
 </section>
 <section class="slide">
 <h2>MyBatis</h2>
-<p>iBatis &#8594; MyBatsis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.</p>
 <ul>
+<li class="">
+iBatis &#8594; MyBatsis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
+</li>
 <li class="">
 First level cache, Lazy loading 존재
 </li>
@@ -3131,19 +3478,39 @@ executorType이 batch일때는 UPDATE, UPDATE, SELECT 쿼리가 호출되면 UPD
 </li>
 </ul>
 </li>
+<li class="">
+ORM적인 특성도 있지만, 쿼리 자동생성기능은 없음
+</li>
 </ul>
 </section>
 <section class="slide">
 <h2>대안 Framework</h2>
 <ul>
 <li class="">
-JOOQ
+JOOQ : Type safety를 활용할 수 있음.
 </li>
 <li class="">
-Requery
+Requery : Native 쿼리를 Annotation 기반의 결과 매핑
 </li>
 <li class="">
 Spring Data JDBC &#8594; 다음 세션
+</li>
+<li class="">
+<a href="https://micronaut-projects.github.io/micronaut-data/latest/guide/#jdbc">Micronaut Data JDBC</a> : Spring Data JDBC와 유사하지만 몇가지 기능이 더 있음.
+<ul>
+<li class="">
+복합 키 (@EmbeddedId) 지원
+</li>
+<li class="">
+insert / update 구분 지원
+</li>
+<li class="">
+@ColumnTransformer 지원
+</li>
+<li class="">
+@Join Fetch 지원
+</li>
+</ul>
 </li>
 </ul>
 </section>
@@ -3160,7 +3527,7 @@ CUD + 단순 R : JPA
 복합적인 R
 <ul>
 <li class="">
-JPA를 써도 QueryDSL이나 Native Query등으로 이미 분리된 패턴으로 구현하고 있을 것임
+JPA를 이미 분리된 패턴으로 구현하고 있을 것임
 </li>
 <li class="">
 Spring JDBC를 추천 : 단순한 쿼리 실행기, 확장 가능
@@ -3181,7 +3548,7 @@ Entity 단위의 접근이 어렵다면 Spring JDBC처럼 사용하면 됨.
 <div class="sect2">
 <h3 id="_아키텍처_전락">아키텍처 전락</h3>
 <ul>
-<li class="">
+<li class=" slide">
 AGGREGATE가 단위로 정리하기 어려운 부분을 별도의 시스템으로 분리하는 것도 고려해볼만하다.
 </li>
 </ul>
