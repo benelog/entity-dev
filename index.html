@@ -2719,7 +2719,7 @@ DDD에서도 이 정의를 따르고 있음.
 </ul>
 </li>
 <li class=" slide">
-과도하게 넓은 의미로 쓰이고 있다. <a href="https://wiki.c2.com/?DataHolder">Data Holder</a>의 의미로
+DTO와 혼용해서 쓰여 왔다.
 <ul>
 <li class="">
 <a href="https://www.amazon.com/Core-J2EE-Patterns-Practices-Strategies/dp/0130648841">Core J2EE Pattern 1판(2001년)</a>에서는 TO(Transfer Object)를 VO라고 적었었음
@@ -2728,14 +2728,20 @@ DDD에서도 이 정의를 따르고 있음.
 DTO와 동일한 의미라고 밝힌 서적도 있음.
 <ul>
 <li class="">
-<a href="https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC">Professional Java EE Design Patterns(2014)</a>
+<a href="https://www.amazon.com/Expert-One-One-Development-without/dp/0764558315">Expert One-to-One J2EE Development(로드존슨, 2004)</a> : (265페이지) <em>Value objects are sometimes referred to as Data Transfer Object(DTOs)</em>
 </li>
 <li class="">
-<a href="https://www.amazon.com/Architecting-Modern-Java-Applications-business-oriented/dp/1788393856/">Architecting Modern Java EE Applications(2017)</a>
+<a href="https://www.amazon.com/Professional-Java-EE-Design-Patterns-ebook/dp/B00R7S6AFC">Professional Java EE Design Patterns(2014)</a> : (12장) <em>The DTO is also referred to as the Value Object</em>
+</li>
+<li class="">
+<a href="https://www.amazon.com/Java-Architects-Handbook-Second-applications/dp/0972954880">The Java EE Architect&#8217;s Handbook, Second Edition(2014)</a> : (5장) <em>My definition of "value object" is very close to a Data Transfer Object (DTO)</em>
 </li>
 </ul>
 </li>
 </ul>
+</li>
+<li class=" slide">
+<a href="https://wiki.c2.com/?DataHolder">Data Holder</a>의 의미로 폭넓게 생각하는 경향도 있음.
 </li>
 </ul>
 </div>
@@ -2807,9 +2813,8 @@ JPA의 <code>@Entity</code> 로 익숙한 개념 : DB 테이블과 대응되는 
 </li>
 </ul>
 </div>
-</section>
-<section class="slide">
-<h2>DDD의 용어</h2>
+<div class="sect2">
+<h3 id="_ddd의_용어">DDD의 용어</h3>
 <p>(DDD 책에서 처럼 대문자료 표기)</p>
 <ul>
 <li class=" slide">
@@ -2819,6 +2824,7 @@ ENTITY :  연속성과 식별성의 맥락에서 정의되는 객체
 VALUE OBJECT : 식별성 없이 속성만으로 동일성을 판단하는 객체
 </li>
 </ul>
+</div>
 </section>
 <section class="slide">
 <h2>ENTITY를 감추기</h2>
@@ -2900,6 +2906,12 @@ DTO의 변화는 외부 인터페이스로 의식해서 관리하는 범위가 �
 </li>
 <li class="">
 이슈 조회 조건 : IssueQuery, IssueCriteria
+</li>
+<li class="">
+이슈 DB 통계 조회 결과 : IssueStatRow
+</li>
+<li class="">
+이슈 + 코멘트 복합 조회 결과 : IssueCommentRow
 </li>
 </ul>
 </li>
@@ -3162,14 +3174,17 @@ DDD의 REPOSITORY는 도메인 레이어에 객체 지향적인 컬렉션 관리
 <h2>Lazy loading 다시 생각하기</h2>
 <ul>
 <li class=" slide">
-Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 꼭 필요할까 생각해볼수 있다.
+Aggregate를 정리하고 복합조회용 객체를 분리하면 Lazy loading이 필수일지 한번 더 생각해볼수 있다.
+</li>
+<li class=" slide">
+반대로 Lazy loading이 있어서 깊은 객체 그래프의 Aggreate를 설계하고자하는 유혹에 빠질수도 있다.
 </li>
 <li class=" slide">
 Lazy loading이 필요하다는 것은 모델링을 다시 생각해봐야한다는 신호일수도 있다.
 </li>
 </ul>
 <div class="listingblock">
-<div class="title"><a href="https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown">CQRS Jouney의 Chapter 3</a> 중에서</div>
+<div class="title"><a href="https://github.com/microsoftarchive/cqrs-journey/blob/master/docs/Journey_03_OrdersBC.markdown">CQRS Journey의 Chapter 3</a> 중에서</div>
 <div class="content">
 <pre><tt>Developer 2: To be clear, the aggregate boundary is here to group things that should change together for reasons of consistency. A lazy load would indicate that things that have been grouped together don't really need this grouping.
 
@@ -3256,6 +3271,33 @@ Immutable이 아니게 될 수 있다.
 </li>
 </ul>
 </div>
+</section>
+<section class="slide">
+<h2>끊나지 않는 고민</h2>
+<ul>
+<li class=" slide">
+비슷한 속성을 가진 클래스가 너무 많이 생기는 건 아닐까?
+<ul>
+<li class="">
+예) 이슈의 제목과 관련된 속성을 담은 클래스
+<ul>
+<li class="">
+IssueCreationCommand, IssueCriteria, IssueDetailResponse, IssueCreatedEvent
+</li>
+<li class="">
+IssueCreationCommand, IssueModificationCommand를 따로 만들어야하나? (id등 차이가 나는건 1개로 동일한 건 10개일때)
+</li>
+</ul>
+</li>
+<li class="">
+이름 짓기가 어렵다
+</li>
+</ul>
+</li>
+<li class=" slide">
+객체 간의 매핑 로직에서의 실수
+</li>
+</ul>
 </section>
 <h1 id="_퍼시스턴스_프레임워크">퍼시스턴스 프레임워크</h1>
 <section class="slide">
@@ -3455,7 +3497,7 @@ Entity의 상태가 변한다는 것&#8594; DB에도 Update된다는 의미
 CUD, 단순R : Entity, Repository, 쿼리 자동 생성
 </li>
 <li class="">
-복잡한 R : 응답전용 DTO,  + QueryDSL
+복잡한 R : 응답전용 DTO,  + QueryDSL 등으로 개념적인 쿼리는 직접 작성
 </li>
 </ul>
 </li>
@@ -3464,27 +3506,101 @@ CUD, 단순R : Entity, Repository, 쿼리 자동 생성
 <section class="slide">
 <h2>MyBatis</h2>
 <ul>
+<li class=" slide">
+Spring JDBC와 JPA의 중간 정도의 추상화
+<ul>
 <li class="">
-iBatis &#8594; MyBatsis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
+iBatis &#8594; MyBatis로 넘어오면서 단순한 쿼리 실행기가 아니게 됨.
+</li>
+</ul>
+</li>
+<li class=" slide">
+ORM적인 특성
+<ul>
+<li class="">
+First level cache, Lazy loading
 </li>
 <li class="">
-First level cache, Lazy loading 존재
+1대 다 매핑, N+1 쿼리 가능성 등
 </li>
 <li class="">
-JDBC 위의 추상화된 동작
+JDBC API보다 추상화된 동작
 <ul>
 <li class="">
 batchUpdate 를 유도하기 위해서는 executorType을 BATCH로 설정해서 sqlSession을 따로 분리해야 함.
 </li>
 <li class="">
-executorType이 batch일때는 UPDATE, UPDATE, SELECT 쿼리가 호출되면 UPDSTE 쿼리를 몰아서 날리기도 함.
+executorType이 batch일때는 UPDATE, UPDATE, SELECT 순서로 쿼리가 호출되면 UPDATE 쿼리를 몰아서 날리기도 함.
 </li>
 </ul>
+</li>
+</ul>
+</li>
+<li class=" slide">
+XML로 쿼리관리를 할 수 있다는 점이 지금 시점에서 장점이 아님.
+</li>
+</ul>
+<div class="sect2">
+<h3 id="_최대_약점">최대 약점</h3>
+<ul>
+<li class=" slide">
+쿼리 결과 &#8594; Entity 매핑 때 Entity 속성명을 Type safe하게 지정할 수 있는 방법이 없음
+<ul>
+<li class="">
+RowMapper같은 확장 인터페이스가 메뉴얼에는 없음.
+</li>
+</ul>
+</li>
+</ul>
+<div class="listingblock">
+<div class="title">XML 방식의 쿼리 결과 매핑</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">&lt;resultMap</span></span> <span style="color: #009900">id</span><span style="color: #990000">=</span><span style="color: #FF0000">"projectResultMap"</span> <span style="color: #009900">type</span><span style="color: #990000">=</span><span style="color: #FF0000">"example.Product"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;result</span></span> <span style="color: #009900">property</span><span style="color: #990000">=</span><span style="color: #FF0000">"id"</span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"id"</span> <span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;result</span></span> <span style="color: #009900">property</span><span style="color: #990000">=</span><span style="color: #FF0000">"name"</span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"name"</span><span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;result</span></span> <span style="color: #009900">property</span><span style="color: #990000">=</span><span style="color: #FF0000">"price"</span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"price"</span><span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;result</span></span> <span style="color: #009900">property</span><span style="color: #990000">=</span><span style="color: #FF0000">"description"</span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"desc"</span><span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;association</span></span> <span style="color: #009900">property</span><span style="color: #990000">=</span><span style="color: #FF0000">"seller"</span> <span style="color: #009900">javaType</span><span style="color: #990000">=</span><span style="color: #FF0000">"example.Seller"</span><span style="font-weight: bold"><span style="color: #0000FF">&gt;</span></span>
+                <span style="font-weight: bold"><span style="color: #0000FF">&lt;constructor&gt;</span></span>
+                        <span style="font-weight: bold"><span style="color: #0000FF">&lt;idArg</span></span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"seller_id"</span> <span style="color: #009900">javaType</span><span style="color: #990000">=</span><span style="color: #FF0000">"int"</span><span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+                        <span style="font-weight: bold"><span style="color: #0000FF">&lt;arg</span></span> <span style="color: #009900">column</span><span style="color: #990000">=</span><span style="color: #FF0000">"seller_name"</span> <span style="color: #009900">javaType</span><span style="color: #990000">=</span><span style="color: #FF0000">"String"</span><span style="font-weight: bold"><span style="color: #0000FF">/&gt;</span></span>
+                <span style="font-weight: bold"><span style="color: #0000FF">&lt;/constructor&gt;</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">&lt;/association&gt;</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">&lt;/resultMap&gt;</span></span></tt></pre></div></div>
+<div class="listingblock">
+<div class="title">애너테이션 방식의 쿼리 결과 매핑</div>
+<div class="content"><!-- Generator: GNU source-highlight
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="font-weight: bold"><span style="color: #000000">Select</span></span><span style="color: #990000">(</span>ProductSql<span style="color: #990000">.</span>SELECT_PRODUCT<span style="color: #990000">)</span>
+@<span style="font-weight: bold"><span style="color: #000000">Results</span></span><span style="color: #990000">(</span>value <span style="color: #990000">=</span> <span style="color: #FF0000">{</span>
+    @<span style="font-weight: bold"><span style="color: #000000">Result</span></span><span style="color: #990000">(</span>property<span style="color: #990000">=</span><span style="color: #FF0000">"id"</span><span style="color: #990000">,</span> column<span style="color: #990000">=</span><span style="color: #FF0000">"id"</span><span style="color: #990000">),</span>
+    @<span style="font-weight: bold"><span style="color: #000000">Result</span></span><span style="color: #990000">(</span>property<span style="color: #990000">=</span><span style="color: #FF0000">"name"</span><span style="color: #990000">,</span> column<span style="color: #990000">=</span><span style="color: #FF0000">"name"</span><span style="color: #990000">),</span>
+    @<span style="font-weight: bold"><span style="color: #000000">Result</span></span><span style="color: #990000">(</span>property<span style="color: #990000">=</span><span style="color: #FF0000">"price"</span><span style="color: #990000">,</span> column<span style="color: #990000">=</span><span style="color: #FF0000">"price"</span><span style="color: #990000">)</span>
+    @<span style="font-weight: bold"><span style="color: #000000">Result</span></span><span style="color: #990000">(</span>property<span style="color: #990000">=</span><span style="color: #FF0000">"seller.id"</span><span style="color: #990000">,</span> column<span style="color: #990000">=</span><span style="color: #FF0000">"seller_id"</span><span style="color: #990000">)</span>
+    @<span style="font-weight: bold"><span style="color: #000000">Result</span></span><span style="color: #990000">(</span>property<span style="color: #990000">=</span><span style="color: #FF0000">"seller.name"</span><span style="color: #990000">,</span> column<span style="color: #990000">=</span><span style="color: #FF0000">"seller_name"</span><span style="color: #990000">)</span>
+<span style="color: #FF0000">}</span><span style="color: #990000">)</span></tt></pre></div></div>
+<ul>
+<li class=" slide">
+<a href="https://github.com/abel533/Mapper/wiki/2.2-mapping">Mapper</a>라는 오픈소스를 이용하면 <code>@Table</code> , <code>@Id</code>, <code>@Column</code> 와 같은 애너테이션으로 쿼리 결과 매핑이 가능한듯함.
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_다른_framework에서도_활용할만한_요소">다른 Framework에서도 활용할만한 요소</h3>
+<ul>
+<li class="">
+<a href="https://mybatis.org/mybatis-3/statement-builders.html">SQL Builder</a>
 </li>
 <li class="">
-ORM적인 특성도 있지만, 쿼리 자동생성기능은 없음
+<a href="https://mybatis.org/mybatis-dynamic-sql/docs/spring.html">Spring NamedParameterJdbcTemplate + MyBatis Dynamic SQL</a>
 </li>
 </ul>
+</div>
 </section>
 <section class="slide">
 <h2>대안 Framework</h2>
