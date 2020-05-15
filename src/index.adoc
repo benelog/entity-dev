@@ -420,7 +420,7 @@ public class Issue  {
 ----
 
 [incremental="true"]
-* 참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋
+* 참조될 타입을 알수 있도록 힌트를 주는 클래스를 만들어도 좋음
 
 [source,java]
 ----
@@ -479,7 +479,7 @@ WHERE a.email = :email
 ----
 
 [incremental="true"]
-* Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있
+* Repository에 조회조건 정도를 추가하고 Service단에서 다른 AGGREGATE을 다시 조합할 수도 있음
 ** `List<Repo> findByCreatorEmail(String email)`
 
 [source,sql]
@@ -496,7 +496,7 @@ WHERE a.email = :email
 * 클래스가 늘어나지만 장점도 있음
 ** Aggregate를 단순하게 유지할 수 있음
 ** JPA의 경우 : Persistent Context를 의식하지 않아도 됨
-* 이런 쿼리는 REPOSITORY보다는 DAO에 어울ㄻ
+* 이런 쿼리는 REPOSITORY보다는 DAO에 어울림
 
 == REPOSITORY vs DAO
 
@@ -545,7 +545,7 @@ boolean isMyIssue(Issue issue, long accountId) {
         issue.setMyIssue(true);
         // 캐쉬된 객체의 상태를 바꿔버림
         // 문제1: 메서드 이름과 어울리지 않아 예측이 어려움
-        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 속성인데 Issue객체에 함께 있
+        // 문제2: issue를 보는 특정 사용자에게 한정된 뷰의 속성인데 Issue객체에 함께 있음
         return true;
     }
     return false;
@@ -557,7 +557,7 @@ boolean isMyIssue(Issue issue, long accountId) {
 [incremental="true"]
 * Cache 하기에 안전하다.
 * 다른 레이어에 메서드 파라미터로 보내도 값이 안 바뀌었다는 확신을 할 수 있음
-* DTO류가 여러 레이어를 오간다면 Immutable하면 더 좋
+* DTO류가 여러 레이어를 오간다면 Immutable하면 더 좋음
 
 ===  Rich Domain Object
 
