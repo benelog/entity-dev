@@ -362,7 +362,7 @@ List<UserDTO> dtos = query.list(
 ** Document DB와 어울림
 * AGGREGATE 1개당 REPOSITORY 1개
 ** AGGREGATE ROOT를 통해서 밖에서 AGGEGATE 안의 객체로 접근함
-* Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋엄
+* Spring Data의 CrudRepository 인터페이스도 AGGREGATE 관점으로 보는 것이 좋음
 
 [source,java]
 .AGGREGATE_ROOT로 저장 대상 타입을 표현해본 CrudRepository
