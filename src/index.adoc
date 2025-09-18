@@ -705,9 +705,21 @@ image:img/groovy-auto-complete.png[groovy-auto-complete.png, title="IntelliJ Enu
 *** executorType이 batch일때는 UPDATE, UPDATE, SELECT 순서로 쿼리가 호출되면 UPDATE 쿼리를 몰아서 날리기도 함.
 * XML로 쿼리관리를 할 수 있다는 점은 지금 시점에서 장점이 아님.
 
-=== 최대 약점
+=== 컴파일 타임의 체크 약점
+
+[incremental="true"]
+* 쿼리 ID 지정의 단점
+** `getSqlSession().selectOne(namespace + "selectOne", id);`
+** XML과 Java 코드 안에서의 쿼리 ID(예: 'selectOne') 는 오타가 나도 컴파일이 잘 됨.
+* Mapper interface를 이용해서 인터페이스의 메서드 이름과 메핑하더라도 XML 안에서의 쿼리ID는 컴파일 시점의 점검되지 않음.
+** `@Select(SellerSqls.SELECT_BY_ID)` 가 그나마 가장 컴파일 시점에 확인됨. (상수 참조))
+** JDK 15후의 text block과 같이 쓰는 것은 괜찮아 보dla
+
+
 [incremental="true"]
 * 쿼리 결과 -> Entity 매핑 때 Entity 속성명을 Type safe하게 지정할 수 있는 방법이 없음
+** description이라는 속성명을 오타를 쳐도 컴파일 시점에는 모름.
+*** SELECT desc as description 으로 써서 자동 매핑해도 마찬가지
 ** RowMapper같은 확장 인터페이스가 메뉴얼에는 없음
 
 [source,xml]
